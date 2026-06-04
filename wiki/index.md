@@ -23,7 +23,7 @@ related:
 
 # Wiki Index
 
-Last updated: 2026-04-15 | Total pages: 34 | Sources ingested: 2
+Last updated: 2026-06-04 | Total pages: 34 + 13 (Mode D scaffold) | Sources ingested: 2
 
 Navigation: [[overview]] | [[log]] | [[hot]] | [[dashboard]] | [[Wiki Map]] | [[getting-started]]
 
@@ -91,3 +91,26 @@ Navigation: [[overview]] | [[log]] | [[hot]] | [[dashboard]] | [[Wiki Map]] | [[
 ## Domains
 
 <!-- Add domain entries here after scaffold -->
+
+---
+
+## Second Brain (Mode D)
+
+_Added 2026-06-04. Personal life OS layer — goals, learning, people, areas, resources._
+
+### Goals
+- [[North Star]] — one-sentence direction; anchor for everything else
+- [[Annual Goals]] — 2026 goals table with quarterly focus
+- [[Weekly Review Template]] — copy and fill each week
+
+### Areas
+- [[areas/_index]] → [[Health]] | [[Career]] | [[Finances]] | [[Creative]]
+
+### Learning
+- [[learning/_index]] — concepts being mastered; skills in development
+
+### People
+- [[people/_index]] — relationships, shared context, follow-ups
+
+### Resources
+- [[resources/_index]] — books, courses, tools, articles worth keeping
