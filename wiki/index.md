@@ -23,7 +23,7 @@ related:
 
 # Wiki Index
 
-Last updated: 2026-06-04 | Total pages: 34 + 13 (Mode D scaffold) | Sources ingested: 2
+Last updated: 2026-06-05 | Total pages: 52 + 13 (Mode D scaffold) | Sources ingested: 6
 
 Navigation: [[overview]] | [[log]] | [[hot]] | [[dashboard]] | [[Wiki Map]] | [[getting-started]]
 
@@ -34,6 +34,15 @@ Navigation: [[overview]] | [[log]] | [[hot]] | [[dashboard]] | [[Wiki Map]] | [[
 - [[LLM Wiki Pattern]] — the pattern for building persistent, compounding knowledge bases using LLMs (status: mature)
 - [[Hot Cache]] — ~500-word session context file, updated after every ingest and session (status: mature)
 - [[Compounding Knowledge]] — why wiki knowledge grows more valuable over time, unlike RAG (status: mature)
+- [[Agent Harness Engineering]] — 98.4% infrastructure / 1.6% AI; the harness is the differentiator; 6 production agent design decisions (status: developing)
+- [[queryLoop Architecture]] — Claude Code's single AsyncGenerator while-loop; 9-step turn pipeline; 5 stop conditions (status: developing)
+- [[5-Layer Compaction]] — graduated context degradation pipeline; Budget Reduction → Snip → Microcompact → Context Collapse → Auto-Compact (status: developing)
+- [[Deny-First Permission Model]] — 7 permission modes, 7 safety layers, broad deny always wins, never restore on resume (status: developing)
+- [[Claude Code Extensibility]] — 4 mechanisms × 3 injection points; graduated context cost from zero (hooks) to high (MCP) (status: developing)
+- [[Subagent Delegation Architecture]] — SkillTool vs AgentTool; 3 isolation modes; sidechain transcripts via flock() (status: developing)
+- [[CLAUDE.md Hierarchy]] — 4 levels; user context not system prompt; 9 ordered context sources (status: developing)
+- [[Agent Design Space Decisions]] — 6 decisions with alternatives; SWE-bench convergence argument; 3 meta-pattern commitments (status: developing)
+- [[Claude Code Ecosystem Reference]] — community repos, blog posts, 8 academic papers; "moat is the harness" independent validation (status: current)
 - [[cherry-picks]] — prioritized feature backlog from ecosystem research; 13 features to add to claude-obsidian (status: current)
 - [[SVG Diagram Style Guide]] — canonical visual style for all diagrams: Space Grotesk, #0A0A0A dark theme, #E07850 accent, full design tokens (status: evergreen)
 - [[Pro Hub Challenge]] — community challenge pattern for building claude-seo/claude-blog extensions; first challenge produced 6 submissions, 5 integrated in v1.9.0 (status: evergreen)
@@ -50,6 +59,8 @@ Navigation: [[overview]] | [[log]] | [[hot]] | [[dashboard]] | [[Wiki Map]] | [[
 ## Entities
 
 - [[Andrej Karpathy]] — AI researcher, creator of the LLM Wiki pattern, former Tesla AI director (status: developing)
+- [[VILA-Lab]] — research group behind "Dive into Claude Code" (arXiv 2604.14228) (status: developing)
+- [[Dive into Claude Code]] — paper; source-level analysis of Claude Code v2.1.88; codifies Agent Harness Engineering as a discipline (status: current)
 - [[Ar9av-obsidian-wiki]] — multi-agent compatible LLM Wiki plugin; delta tracking manifest (status: current)
 - [[Nexus-claudesidian-mcp]] — native Obsidian plugin + MCP bridge; workspace memory, task management (status: current)
 - [[ballred-obsidian-claude-pkm]] — goal cascade PKM; auto-commit hooks, /adopt command (status: current)
@@ -63,6 +74,10 @@ Navigation: [[overview]] | [[log]] | [[hot]] | [[dashboard]] | [[Wiki Map]] | [[
 ## Sources
 
 - [[claude-obsidian-ecosystem-research]] — 2026-04-08 | web research across 16+ repos | 8 wiki pages created
+- [[Dive-into-Claude-Code-README]] — 2026-06-05 | VILA-Lab arXiv 2604.14228 | Claude Code v2.1.88 architecture overview
+- [[Dive-into-Claude-Code-Architecture]] — 2026-06-05 | VILA-Lab arXiv 2604.14228 | 7-component system, 5-layer subsystems, extensibility, subagents, session persistence
+- [[Dive-into-Claude-Code-Build-Agent]] — 2026-06-05 | VILA-Lab arXiv 2604.14228 | 6 design decisions, alternatives, 3 meta-pattern commitments
+- [[Dive-into-Claude-Code-Related-Resources]] — 2026-06-05 | VILA-Lab arXiv 2604.14228 | community analysis, reimplementations, blog posts, academic papers
 
 ---
 

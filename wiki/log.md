@@ -216,3 +216,35 @@ Parse recent entries: `grep "^## \[" wiki/log.md | head -10`
 - Plugin: claude-obsidian v1.1.0
 - Structure: seed files + first ingest complete
 - Skills: wiki, wiki-ingest, wiki-query, wiki-lint, save, autoresearch
+
+## [2026-06-05] ingest | Dive into Claude Code — README (arXiv 2604.14228)
+- Source: `.raw/architechtai/doc_README.md`
+- Summary: [[Dive-into-Claude-Code-README]]
+- Pages created: [[Dive-into-Claude-Code-README]], [[VILA-Lab]], [[Dive into Claude Code]], [[Agent Harness Engineering]], [[queryLoop Architecture]], [[5-Layer Compaction]], [[Deny-First Permission Model]]
+- Pages updated: [[Andrej Karpathy]], [[entities/_index]], [[sources/_index]], [[concepts/_index]], [[index]], [[hot]]
+- Key insight: 98.4% of Claude Code is deterministic infrastructure; the harness (hooks, compaction, permissions) is the differentiator, not the model loop.
+
+
+## [2026-06-05] ingest | Dive into Claude Code — Architecture (arXiv 2604.14228)
+- Source: `.raw/architechtai/doc_architecture.md`
+- Summary: [[Dive-into-Claude-Code-Architecture]]
+- Pages created: [[Dive-into-Claude-Code-Architecture]], [[Claude Code Extensibility]], [[Subagent Delegation Architecture]], [[CLAUDE.md Hierarchy]]
+- Pages updated: [[queryLoop Architecture]], [[5-Layer Compaction]], [[Deny-First Permission Model]], [[concepts/_index]], [[index]], [[hot]]
+- Key insight: CLAUDE.md is user context (probabilistic), not system prompt (deterministic) — permission rules are the enforcement layer, not text instructions.
+
+
+## [2026-06-05] ingest | Dive into Claude Code — Build Your Own Agent (arXiv 2604.14228)
+- Source: `.raw/architechtai/doc_build-your-own-agent.md`
+- Summary: [[Dive-into-Claude-Code-Build-Agent]]
+- Pages created: [[Dive-into-Claude-Code-Build-Agent]], [[Agent Design Space Decisions]]
+- Pages updated: [[Agent Harness Engineering]], [[Dive into Claude Code]], [[concepts/_index]], [[index]], [[hot]]
+- Key insight: Top 3 frontier models are within 1% on SWE-bench — the harness is now the differentiator, not the model. Three meta-pattern commitments: graduated layering, append-only auditability, model-in-harness.
+
+
+## [2026-06-05] ingest | Dive into Claude Code — Related Resources (arXiv 2604.14228)
+- Source: `.raw/architechtai/doc_related-resources.md`
+- Summary: [[Dive-into-Claude-Code-Related-Resources]]
+- Pages created: [[Dive-into-Claude-Code-Related-Resources]], [[Claude Code Ecosystem Reference]]
+- Pages updated: [[Agent Harness Engineering]], [[Dive into Claude Code]], [[index]], [[hot]]
+- Key insight: claw-code hit 179K stars in 9 days (fastest to 100K in GitHub history) — the community appetite for harness-level understanding is real. "The moat is the harness, not the model" independently confirmed by post-leak analysts.
+
