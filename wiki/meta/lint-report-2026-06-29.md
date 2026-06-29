@@ -32,4 +32,34 @@ Scope: the SEC/EDGAR autoresearch pages (passes 1-2, 30 pages). Run as part of t
 
 ## Next
 
-Open research clusters remaining (see synthesis Open Questions): XBRL/FDTA, 2024-26 rulemaking, Reg S-K/S-X, remaining exemptions (Reg D/A+/144), SEC enforcement & structure, practical EDGAR data access.
+Open research clusters remaining (see synthesis Open Questions): Reg S-K/S-X, remaining exemptions (Reg D/A+/144), SEC enforcement & structure, practical EDGAR data access.
+
+---
+
+# Pass 4 re-lint (full vault, after passes 3-4)
+
+Scope: entire vault (124 pages) for dead links; all SEC/EDGAR loop pages for orphans.
+
+## Summary
+
+| Check | Result |
+|-------|--------|
+| Orphan pages (loop concept/entity/question pages) | **0** |
+| Dead links introduced by THIS loop | **3, all fixed** |
+| Pre-existing dead links (not from this loop) | 20 distinct targets - flagged below, not modified |
+
+## Fixed (this loop's own pages)
+
+- `Recent SEC Rulemaking and Litigation 2023-2026.md`: three wikilinks used table-escaped pipes (`[[Page\|alias]]`) which render in Obsidian but tripped strict link resolution. Rewrote as plain `[[Page]]` links. Now resolve cleanly.
+
+## Needs human review (pre-existing, NOT touched by this loop)
+
+These dead links predate the SEC/EDGAR autoresearch and were left untouched:
+
+- `[[How does the LLM Wiki pattern work?]]` (trailing `?`) referenced from hot.md/log.md/Query-Time Retrieval.md, while the actual file is `How does the LLM Wiki pattern work.md` (no `?`). Likely a rename-drift; an alias or link fix would resolve it.
+- `[[Wiki Map]]` (6 refs) - target is `Wiki Map.canvas`, not a `.md`; expected for canvas links.
+- `[[Foo]]` - illustrative example text in DragonScale Memory.md / log.md.
+- Doc/skill stubs: `[[mcp-setup]]`, `[[wiki-cli]]`, `[[wiki-fold]]`, `[[wiki-mode]]`, `[[methodology-modes-guide]]`, `[[fold-template]]`, `[[dashboard.base]]`, `[[claude-obsidian-presentation]]`, `[[AI Marketing Hub Cover Images Canvas]]`, `[[Claude Canvas]]`, `[[Claude Obsidian]]`, `[[Karpathy LLM Wiki Pattern]]`, `[[Rankenstein]]`, `[[E-commerce SEO]]`, `[[Three laws of motion]]`, `[[wikilinks]]`.
+- `[[wikilink]]` in this report (pass 2 section) is illustrative prose, not a real link.
+
+No destructive fixes applied. Pre-existing items are surfaced for the maintainer to decide.

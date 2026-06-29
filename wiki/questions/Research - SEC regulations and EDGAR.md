@@ -59,6 +59,15 @@ U.S. securities regulation rests on a **mandatory-disclosure** model: the [[U.S.
 - XBRL history: mandate began **2009** (large accelerated filers), all filers by **2012**; this XBRL data powers the [[EDGAR APIs]]. (Source: [[XBRL]])
 - The **[[Financial Data Transparency Act]]** (FDTA, Dec 2022) extends machine-readable standards across **nine federal agencies** (incl. SEC, Treasury, Fed, FDIC, CFTC...). Adopts a common **LEI (ISO 17442)**; standardizes format without requiring new data collection. Proposed Aug 2024; final joint rule in 2026. (Source: [[Financial Data Transparency Act]])
 
+## Recent Rulemaking 2023-2026 (Pass 4)
+
+The era's rules split by type ([[Recent SEC Rulemaking and Litigation 2023-2026]]):
+
+- **In effect:** [[SEC Cybersecurity Disclosure Rules]] (Jul 2023) - 8-K **Item 1.05** material-incident disclosure within **4 business days** + annual Reg S-K **Item 106** governance; and [[T+1 Settlement Cycle]] (Rule 15c6-1, effective **May 28, 2024**).
+- **Vacated:** the share-repurchase ("buyback") disclosure rule (May 2023) was struck down by the **Fifth Circuit on Dec 19, 2023** as arbitrary and capricious under the APA. (Source: [[Orrick - Fifth Circuit Vacates Share Repurchase Rules]])
+- **Stayed -> rescission proposed:** the [[SEC Climate Disclosure Rule]] (Mar 2024) was stayed Apr 2024, the SEC dropped its defense Mar 2025, and a **2026 rescission** is now proposed. (Source: [[SEC Climate Disclosure Rule]])
+- Pattern: disclosure-expansion mandates drew successful APA / major-questions challenges; operational rules (T+1, cyber-incident) stuck.
+
 ## Key Entities
 
 - [[U.S. Securities and Exchange Commission]]: the federal regulator that administers securities law and operates EDGAR.
@@ -77,6 +86,10 @@ U.S. securities regulation rests on a **mandatory-disclosure** model: the [[U.S.
 - [[Form C]]: the Reg CF offering statement (plus C-AR annual report) filed on EDGAR.
 - [[XBRL]]: structured-data tagging standard (inline XBRL) for EDGAR financial filings.
 - [[Financial Data Transparency Act]]: 2022 law mandating uniform machine-readable data across nine financial regulators.
+- [[SEC Cybersecurity Disclosure Rules]]: 8-K Item 1.05 + Reg S-K Item 106 (in effect, 2023).
+- [[SEC Climate Disclosure Rule]]: adopted 2024, stayed, rescission proposed 2026.
+- [[T+1 Settlement Cycle]]: one-day settlement, effective May 2024.
+- [[Recent SEC Rulemaking and Litigation 2023-2026]]: roundup of the era's rules and their fates.
 
 ## Contradictions
 
@@ -88,7 +101,7 @@ U.S. securities regulation rests on a **mandatory-disclosure** model: the [[U.S.
 - **EDGAR API rate limits:** the exact current fair-access limit (commonly cited as 10 req/s) was not re-verified - SEC.gov blocked automated fetch (HTTP 403). Confirm from the official Developer Resources page.
 - **EDGAR Next machine-to-machine filing:** how API tokens / technical-administrator roles work for automated filing under the new model needs a dedicated pass.
 - **XBRL & structured-data mandate:** covered in Pass 3 (XBRL/iXBRL + FDTA). Remaining: exact FDTA 2026 final-rule effective date; per-agency SEC implementing rules.
-- **Recent rulemaking (2024–2026):** climate disclosure, cybersecurity incident disclosure (8-K Item 1.05), and share-repurchase rules are not yet covered.
+- **Recent rulemaking (2023-2026):** covered in Pass 4 (cyber, climate, buybacks, T+1). Remaining: precise 2026 climate-rescission final text; any new 2026 disclosure proposals.
 - **Regulation S-K / S-X:** the detailed disclosure-content and financial-statement rules behind the forms were not yet covered.
 - **Enforcement & remaining exemptions:** Reg D (506b/506c), Reg A+, Rule 144, accredited-investor definition, and the SEC enforcement process remain open. (Reg CF covered in Pass 2.)
 - **Reg CF financial-statement tiers:** exact dollar thresholds for self-certified vs reviewed vs audited financials (Rule 201(t)) still need verification.
@@ -112,3 +125,4 @@ U.S. securities regulation rests on a **mandatory-disclosure** model: the [[U.S.
 - **Pass 1 (2026-06-29):** Broad sweep - laws, EDGAR system, filing types, EDGAR Next, APIs. 16 pages filed.
 - **Pass 2 (2026-06-29):** Reg CF crowdfunding funding portals - Regulation Crowdfunding, Funding Portal, Form C, FINRA, and the three leading portals (Wefunder/StartEngine/Republic). 14 pages filed.
 - **Pass 3 (2026-06-29):** XBRL & structured data - XBRL/inline XBRL, Financial Data Transparency Act, FASB. 8 pages filed.
+- **Pass 4 (2026-06-29):** Recent rulemaking 2023-2026 - cybersecurity (8-K Item 1.05), climate disclosure, buyback vacatur, T+1, plus a litigation roundup. 9 pages filed. Wiki-lint run (full vault): 0 orphans, fixed 3 self-introduced dead links, flagged pre-existing ones for human review.

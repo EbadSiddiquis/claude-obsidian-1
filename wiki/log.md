@@ -23,6 +23,14 @@ Entry format: `## [YYYY-MM-DD] operation | Title`
 
 Parse recent entries: `grep "^## \[" wiki/log.md | head -10`
 
+## [2026-06-29] autoresearch | SEC regulations and EDGAR (pass 4: recent rulemaking + lint)
+- Rounds: 1 (4 search angles, detailed law-firm/SEC excerpts; no extra fetch needed)
+- Sources found: 5 (2 SEC.gov, DLA Piper, Orrick, Davis Polk)
+- Pages created: [[SEC Cybersecurity Disclosure Rules]], [[SEC Climate Disclosure Rule]], [[T+1 Settlement Cycle]], [[Recent SEC Rulemaking and Litigation 2023-2026]] + 5 source pages (9 total)
+- Lint: full-vault wiki-lint run; 0 orphans among loop pages, fixed 3 self-introduced dead links (table-escaped pipes), pre-existing dead links flagged for human review in [[Lint Report 2026-06-29]]
+- Synthesis: [[Research - SEC regulations and EDGAR]] (Pass 4 section added)
+- Key finding: 2023-26 SEC rules split by type. Operational rules stuck (T+1 settlement May 2024; cyber 8-K Item 1.05). Disclosure-expansion rules failed: the buyback rule was vacated by the Fifth Circuit (Dec 2023) and the climate rule was stayed then proposed for rescission (2026).
+
 ## [2026-06-29] autoresearch | SEC regulations and EDGAR (pass 3: XBRL & structured data)
 - Rounds: 2 (4 search angles + 2 depth fetches)
 - Sources found: 5 (2 SEC.gov, Covington, Cooley, IRIS Carbon)
