@@ -222,6 +222,12 @@ De-risked before building. Findings:
 
 ## Revision Log
 
+- **v0.4 (2026-06-29):** Shipped the first END-TO-END flow `scripts/screen-offering.py`:
+  CIK -> latest Form D -> issuer + related persons (506(d) covered persons, with roles) ->
+  bad-actor drift screen, never-opine output. Verified live on a real Form D (3 covered
+  persons extracted with relationships). Lesson captured: EDGAR submissions' `primaryDocument`
+  for Form D points at the XSLT-rendered HTML (`xslFormDX08/primary_doc.xml`); the raw
+  structured XML is the same filename without the styling-dir prefix.
 - **v0.3 (2026-06-29):** De-risked the bad-actor moat's data foundation before building
   (Self-Refinement Protocol firing on its first real opportunity). Continuous leg GREEN (SEC
   Administrative Proceedings RSS, live + structured); historical SALI lookup YELLOW (JS-only,
