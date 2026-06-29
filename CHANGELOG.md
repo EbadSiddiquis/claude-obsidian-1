@@ -12,6 +12,7 @@ SEC/EDGAR knowledge build + a reusable primary-source fetch capability + the pro
 - **General Operating Principles** in `CLAUDE.md` (diagnose-before-detour, a blocked primary source is a bug, disclose fallbacks, capture the fix, escalate) — generalized from the sec.gov incident; also mirrored to global memory.
 - **Product Context + `docs/product-thesis.md`** (living thesis: counsel-ready/drift-monitored layer for securities offerings; control model + five gap axes + three-layer drift engine with verified eCFR/Federal-Register endpoints) plus a Self-Refinement Protocol and a standing directive so future sessions refine the thesis proactively.
 - **SEC/EDGAR research vault** — ~87 cited, lint-clean wiki pages across 10 autoresearch passes (laws → EDGAR → filings → exemptions → disclosure rulebooks → enforcement → proxy → takeovers → data access), hung off the synthesis `wiki/questions/Research - SEC regulations and EDGAR.md`.
+- **`scripts/badactor-watch.py`** — first product atom: a continuous Rule 506(d) bad-actor drift monitor. Polls the official SEC Administrative Proceedings RSS feed (verified live) and flags watchlist names, emitting `escalate_to_counsel` / `open` with disambiguation notes — never a disqualification conclusion (honors the thesis's never-opine discipline). Reuses `sec-fetch.sh` for compliant fetching.
 
 ## [1.9.2] - 2026-05-27 (prompt-cache hardening + path-handling robustness)
 

@@ -152,6 +152,26 @@ Drift has three sources, matched to where the truth lives:
     touch the CFR. So `authority.type` must be polymorphic and each type gets its own watcher;
     the autoresearch loop covers orders/guidance/no-action (it already caught that April order).
 
+### Verified data sources for the bad-actor moat (2026-06-29 probe)
+
+De-risked before building. Findings:
+
+- **Continuous drift leg = GREEN.** The official **SEC Administrative Proceedings RSS feed**
+  (`https://www.sec.gov/rss/litigation/admin.xml`) returns live, structured RSS (confirmed:
+  25 items, same-day, real respondent names). Free, official, pollable -> this is the
+  continuous bad-actor / enforcement drift signal. (Litigation-releases feed exists too; the
+  guessed URL 404'd, find the current one.)
+- **Historical point-in-time check (SALI) = YELLOW.** The SEC Action Lookup - Individuals
+  (`/litigations/sec-action-look-up?last_name=...`) is the right *official* dataset (court
+  judgments + admin orders, individuals named in SEC actions) BUT its results render
+  **client-side via Drupal Views AJAX** - no clean GET-JSON (`?_format=json` -> 406). Options
+  to query it: (a) drive it with the pre-installed **Playwright/Chromium**, (b) rebuild a
+  back-index from the `/files/litigation/admin|litreleases` archives, or (c) a paid
+  third-party enforcement API. Not blocked; just not a one-liner.
+- **Build-order implication:** build the slice on the GREEN leg first (continuous monitor on
+  the AP RSS) - it works on free official data today AND is the subscription value. Treat the
+  historical SALI lookup as v2 (Playwright).
+
 ## The moat questions (public data answers these; a solo human cannot)
 
 - **Bad-actor + rule-change monitoring** - continuous, data-grounded, across a whole client
@@ -202,6 +222,11 @@ Drift has three sources, matched to where the truth lives:
 
 ## Revision Log
 
+- **v0.3 (2026-06-29):** De-risked the bad-actor moat's data foundation before building
+  (Self-Refinement Protocol firing on its first real opportunity). Continuous leg GREEN (SEC
+  Administrative Proceedings RSS, live + structured); historical SALI lookup YELLOW (JS-only,
+  needs Playwright/archives/3rd-party). Set build order: green leg first. Shipped the first
+  product atom `scripts/badactor-watch.py` (continuous monitor; never-opine output).
 - **v0.2 (2026-06-29):** Added the Architecture (Control atom schema; the five axes -
   state/locus/owner/cadence/severity; the three-layer drift engine). Verified the
   rule-change-monitor endpoints live: eCFR versioner (per-section amendment dates for 17 CFR
