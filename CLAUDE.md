@@ -10,6 +10,30 @@ This folder is both a Claude Code plugin and an Obsidian vault.
 
 This vault demonstrates the LLM Wiki pattern — a persistent, compounding knowledge base for Claude + Obsidian. Drop any source, ask any question, and the wiki grows richer with every session.
 
+## Operating Principles (general — how to work, not what to build)
+
+These govern *method*, not subject matter, and apply to every task. They exist because in
+the SEC/EDGAR research a blocked primary source (sec.gov returned HTTP 403) was routed
+around with weaker secondary sources instead of being fixed at the source. The real cause
+was a missing `User-Agent` header — a one-line fix that went unmade for hours. Don't repeat
+that pattern:
+
+1. **Diagnose before detour.** When a tool call or fetch fails or returns a blocked / empty
+   / error result (403, 401, 429, 5xx, empty body, truncated output), do NOT silently fall
+   back to an inferior source or approach. First read the actual error, form a hypothesis
+   about the cause, and try to fix the access itself (User-Agent / headers, auth, rate,
+   endpoint, or a different tool). Only fall back if the fix genuinely fails.
+2. **A blocked primary source is a bug, not a fact.** The more authoritative/valuable the
+   source, the more it's worth fixing access rather than approximating around it.
+3. **Say so when you fall back.** If you do use a lesser source after a block, state plainly
+   that you did, why, and what's therefore unverified. Never present a workaround as if it
+   were the primary source.
+4. **Capture the fix.** When you discover a workaround or technique, persist it to durable
+   memory (this file, a script, or a wiki/doc) and tell the user where you put it, so it is
+   not rediscovered from scratch next time.
+5. **Escalate, don't quietly degrade.** When you cannot fix an obstacle, surface it to the
+   user instead of silently lowering quality.
+
 ## Vault Structure
 
 ```
