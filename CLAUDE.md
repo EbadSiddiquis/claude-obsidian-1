@@ -46,9 +46,15 @@ non-malpractice position; honor it in anything built here.
 
 The SEC wiki = the controls framework. `scripts/sec-fetch.sh` + data.sec.gov = the
 verification/monitoring/precedent layer. The autoresearch loop = the regulatory-drift
-monitor prototype. Full thesis (living, refine it as it evolves):
-[docs/product-thesis.md](docs/product-thesis.md). When the goal sharpens in conversation,
-update that doc and bump its Revision Log.
+monitor prototype. Full thesis (living): [docs/product-thesis.md](docs/product-thesis.md).
+
+**Standing directive (do this without being asked):** treat the thesis as THE goal. When
+product-relevant, read it first; and when any work, research, data pull, or remark sharpens,
+contradicts, or answers something in it, **update the doc and bump its Revision Log as part
+of the work** - do not wait to be prompted. Point the autoresearch backlog at the doc's Open
+Questions so each pass retires one. See the doc's "Self-Refinement Protocol" for the full
+rule and the honest boundary (persistence is external memory reloaded per session, not
+autonomous cognition). This is the capture-the-fix Operating Principle applied to the goal.
 
 ## Vault Structure
 
