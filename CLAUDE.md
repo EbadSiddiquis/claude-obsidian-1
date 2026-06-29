@@ -34,6 +34,22 @@ that pattern:
 5. **Escalate, don't quietly degrade.** When you cannot fix an obstacle, surface it to the
    user instead of silently lowering quality.
 
+## Product Context (what this research is FOR)
+
+The SEC/EDGAR research in this vault is not academic. It serves a product: a
+**counsel-ready, drift-monitored compliance layer for securities offerings** -
+"Vanta-for-securities-counsel." The product makes an issuer counsel-ready and monitors for
+drift; **the lawyer still opines.** It assembles and flags; **it never opines.** Outputs
+resolve to `satisfied + evidence` / `open` / `escalate to counsel` - never to a legal
+conclusion ("compliant", "exemption available"). That discipline is the defensible,
+non-malpractice position; honor it in anything built here.
+
+The SEC wiki = the controls framework. `scripts/sec-fetch.sh` + data.sec.gov = the
+verification/monitoring/precedent layer. The autoresearch loop = the regulatory-drift
+monitor prototype. Full thesis (living, refine it as it evolves):
+[docs/product-thesis.md](docs/product-thesis.md). When the goal sharpens in conversation,
+update that doc and bump its Revision Log.
+
 ## Vault Structure
 
 ```
