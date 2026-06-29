@@ -79,3 +79,16 @@ Scope: 32 SEC/EDGAR loop concept/entity/question pages (vault now 146 pages tota
 | Loop concept/entity/question pages | 32 |
 
 All exemptions (Reg D/A/144/Accredited/Exempt Offerings), disclosure-rulebook (S-K/S-X/Integrated Disclosure), and enforcement (Divisions/Enforcement Process/Whistleblower) pages link cleanly and have inbound references. No self-introduced dead links this round (table-escaped-pipe pattern avoided per the pass-4 lesson). Pre-existing vault dead links from the pass-4 section remain for human review; not re-listed.
+
+---
+
+# Pass 10 re-lint (after passes 9-10)
+
+Scope: 39 SEC/EDGAR loop concept/entity/question pages (vault now 163 pages).
+
+| Check | Result |
+|-------|--------|
+| Dead links in loop pages | **0** |
+| Orphan loop pages | **0** |
+
+New proxy (Proxy Statement / Universal Proxy / Rule 14a-8) and takeover (Williams Act / Tender Offer) pages all link cleanly and have inbound references. Passes 9-10 fetched SEC primary sources directly via `scripts/sec-fetch.sh` (compliant User-Agent + redirect-following), so those source pages are marked "verified" rather than "search excerpt."

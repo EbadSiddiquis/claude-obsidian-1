@@ -49,7 +49,8 @@ case "$URL" in
 esac
 
 # Be polite: a small delay keeps well under the 10 req/s ceiling on tight loops.
-fetch() { curl -sS -A "$UA" "$URL" "$@"; }
+# -L follows redirects: sec.gov uses same-host 301s heavily when pages move.
+fetch() { curl -sSL -A "$UA" "$URL" "$@"; }
 
 if [[ "$STRIP_HTML" -eq 1 ]]; then
   fetch "$@" | python3 -c "

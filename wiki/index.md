@@ -23,7 +23,7 @@ related:
 
 # Wiki Index
 
-Last updated: 2026-06-29 | Total pages: 52 + 13 (Mode D scaffold) + 82 (SEC/EDGAR autoresearch, 9 passes) | Sources ingested: 8
+Last updated: 2026-06-29 | Total pages: 52 + 13 (Mode D scaffold) + 87 (SEC/EDGAR autoresearch, 10 passes) | Sources ingested: 8
 
 Navigation: [[overview]] | [[log]] | [[hot]] | [[dashboard]] | [[Wiki Map]] | [[getting-started]]
 
@@ -83,6 +83,8 @@ Navigation: [[overview]] | [[log]] | [[hot]] | [[dashboard]] | [[Wiki Map]] | [[
 - [[Proxy Statement]] - DEF 14A / Schedule 14A under Section 14(a); director elections, auditor, say-on-pay (status: developing)
 - [[Universal Proxy]] - Rule 14a-19; one card lists all sides' nominees in a contested election (status: developing)
 - [[Rule 14a-8 Shareholder Proposals]] - getting a shareholder proposal into the company proxy (status: developing)
+- [[Williams Act]] - 1968 takeover law; Sections 13(d)/14(d)/14(e) (status: developing)
+- [[Tender Offer]] - Schedule TO / 14D-9; 20-day rule, all-holders/best-price; 2026 10-day order (status: developing)
 
 ---
 
@@ -123,6 +125,7 @@ Navigation: [[overview]] | [[log]] | [[hot]] | [[dashboard]] | [[Wiki Map]] | [[
 - _Enforcement & structure cluster (2026-06-29):_ [[SEC.gov - Organizational Chart]], [[Winston & Strawn - SEC Investigations Primer]], [[Wikipedia - SEC Office of the Whistleblower]]
 - _EDGAR data access cluster (2026-06-29):_ [[SEC.gov - Accessing EDGAR Data]], [[SEC.gov - Financial Statement Data Sets]], [[SEC.gov - New Rate Control Limits]]
 - _Proxy cluster (2026-06-29, SEC primaries fetched directly):_ [[SEC.gov - Universal Proxy]], [[SEC.gov - Proxy Rules and Schedules 14A 14C]], [[Cornell LII - Schedule 14A (Rule 14a-101)]], [[Debevoise - Shareholder Proposals under Rule 14a-8]]
+- _Takeovers cluster (2026-06-29, SEC primary fetched directly):_ [[SEC.gov - Tender Offer Rules and Schedules]], [[Ropes & Gray - SEC Cuts Minimum Tender Offer Period]], [[US Law Explained - The Williams Act]]
 
 ---
 

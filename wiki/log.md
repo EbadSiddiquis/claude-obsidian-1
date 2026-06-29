@@ -23,6 +23,15 @@ Entry format: `## [YYYY-MM-DD] operation | Title`
 
 Parse recent entries: `grep "^## \[" wiki/log.md | head -10`
 
+## [2026-06-29] autoresearch | SEC regulations and EDGAR (pass 10: takeovers / Williams Act + lint)
+- Rounds: 1 (2 search angles + SEC primary fetch via scripts/sec-fetch.sh)
+- Sources found: 3 (SEC.gov tender-offer CDI fetched DIRECTLY + verified, Ropes & Gray, US Law Explained)
+- Pages created: [[Williams Act]], [[Tender Offer]] + 3 source pages (5 total)
+- Lint: full-vault (163 pages); 0 dead links / 0 orphans across 39 loop pages
+- Tooling: improved scripts/sec-fetch.sh to follow redirects (-L) after diagnosing sec.gov 301s (principle: fix access, don't work around it)
+- Synthesis: [[Research - SEC regulations and EDGAR]] (Pass 10 section)
+- Key finding: Williams Act (1968) = takeover rules via Sections 13(d)/14(d)/14(e). Tender offers run on Schedule TO (SC TO-T/TO-I/TO-C) with a 14D-9 board response in 10 business days; 20-business-day minimum period, all-holders + best-price rules, withdrawal rights; Rule 13e-4 (issuer self-tender) and 13e-3 (going private). Notable: April 16 2026 SEC exemptive order halves the minimum period to 10 business days for negotiated all-cash equity offers.
+
 ## [2026-06-29] autoresearch | SEC regulations and EDGAR (pass 9: proxy solicitation)
 - Rounds: 1 (2 search angles + 2 SEC primary fetches via scripts/sec-fetch.sh)
 - Sources found: 4 (2 SEC.gov fetched DIRECTLY + verified, Cornell LII, Debevoise)

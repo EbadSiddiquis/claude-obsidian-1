@@ -91,6 +91,12 @@ The Securities Act requires registration unless an exemption applies ([[Exempt O
 - **[[Universal Proxy]]** (Rule 14a-19, adopted Nov 2021, effective Jan 31 2022, applies to elections after Aug 31 2022): contested director elections must use one card listing **all nominees of all sides**. Dissidents must solicit **>=67%** of voting power and meet 60/50/25-day deadlines. (Source: [[SEC.gov - Universal Proxy]], fetched directly)
 - **[[Rule 14a-8 Shareholder Proposals]]** is the separate path for putting a shareholder *proposal* (not a nominee) into the company proxy, subject to enumerated exclusion grounds and SEC no-action letters.
 
+## Takeovers: The Williams Act & Tender Offers (Pass 10)
+
+- The **[[Williams Act]]** (1968) regulates takeovers via three Exchange Act sections: **13(d)** (>5% ownership disclosure on Schedule 13D), **14(d)** (tender-offer procedure, Reg 14D), and **14(e)** (broad anti-fraud for "any tender offer," Reg 14E). Its four guarantees: adequate info, adequate time, equal treatment, withdrawal rights. (Source: [[Williams Act]])
+- A **[[Tender Offer]]** runs through a **Schedule TO** (EDGAR tags SC TO-T / TO-I / TO-C); the target board responds on **Schedule 14D-9** within **10 business days**. Core rules: **20-business-day** minimum period, **withdrawal rights**, **all-holders** and **best-price** rules; **Rule 13e-4** covers issuer self-tenders and **Rule 13e-3** going-private deals. (Source: [[SEC.gov - Tender Offer Rules and Schedules]], fetched directly)
+- **2026 change:** an April 16, 2026 SEC exemptive order **halves the minimum period to 10 business days** for negotiated all-cash equity offers. (Source: [[Tender Offer]])
+
 ## Key Entities
 
 - [[U.S. Securities and Exchange Commission]]: the federal regulator that administers securities law and operates EDGAR.
@@ -130,6 +136,7 @@ The Securities Act requires registration unless an exemption applies ([[Exempt O
 - [[Regulation S-K]], [[Regulation S-X]], [[Integrated Disclosure System]]: the narrative and financial-statement disclosure rulebooks.
 - [[SEC Divisions and Structure]], [[SEC Enforcement Process]], [[SEC Whistleblower Program]]: how the agency is organized and enforces the law.
 - [[Proxy Statement]], [[Universal Proxy]], [[Rule 14a-8 Shareholder Proposals]]: shareholder-voting and proxy-solicitation rules.
+- [[Williams Act]], [[Tender Offer]]: takeover and tender-offer regulation (Schedule TO / 14D-9).
 
 ## Contradictions
 
@@ -174,3 +181,4 @@ The Securities Act requires registration unless an exemption applies ([[Exempt O
 - **Pass 7 (2026-06-29):** SEC structure & enforcement - Divisions/DERA, Enforcement Process (Wells), Whistleblower Program. 6 pages filed. Wiki-lint (full vault, 146 pages): 0 dead links / 0 orphans across 32 loop pages.
 - **Pass 8 (2026-06-29):** Practical EDGAR data access - EDGAR Data Access (CIK/accession/rate limits), EDGAR Bulk Data. 5 pages filed; resolved the long-standing API rate-limit open question (10 req/s + User-Agent). Planned backlog complete.
 - **Pass 9 (2026-06-29):** Proxy solicitation - Proxy Statement (Schedule 14A / say-on-pay), Universal Proxy (Rule 14a-19), Rule 14a-8 shareholder proposals. 7 pages filed. FIRST pass to pull SEC primary sources directly via scripts/sec-fetch.sh (verified verbatim), per the new operating principle.
+- **Pass 10 (2026-06-29):** Takeovers - Williams Act (13(d)/14(d)/14(e)), Tender Offer (Schedule TO/14D-9, 20-day rule, all-holders/best-price, April 2026 10-day order). 5 pages + full-vault lint (0/0). SEC primaries fetched directly; also improved scripts/sec-fetch.sh to follow redirects.
