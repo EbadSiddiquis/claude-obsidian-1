@@ -29,6 +29,6 @@ key_claims:
 
 Official SEC small-business resource on Reg CF: dollar caps, intermediary requirement, investor limits, and Form C/C-AR mechanics. Primary source for [[Regulation Crowdfunding]] and [[Form C]].
 
-> [!note] Figures captured via WebSearch excerpt; direct sec.gov WebFetch returns 403.
+> [!note] **Verified 2026-06-29** via direct sec.gov request with a compliant User-Agent (HTTP 200). Confirmed: $5M aggregate cap per 12 months, registered intermediary (broker-dealer or funding portal) required, non-accredited investor limits, and 1-year resale restriction. Page last reviewed by SEC April 24, 2025.
 
-**Confidence:** high — official SEC primary source.
+**Confidence:** high - official SEC primary source, directly verified.

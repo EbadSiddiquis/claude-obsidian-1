@@ -29,6 +29,6 @@ key_claims:
 
 Official SEC guidance on programmatic EDGAR access: identifiers, search, and bulk data. Primary source for [[EDGAR Data Access]] and [[EDGAR Bulk Data]].
 
-> [!note] Captured via WebSearch excerpt; direct sec.gov WebFetch returns 403 (the very rate-control behavior this page documents).
+> [!note] **Verified 2026-06-29** via direct sec.gov request with a compliant User-Agent (HTTP 200). Confirmed verbatim: "Current max request rate: 10 requests/second" and "Please declare your user agent in request headers: User-Agent: Sample Company Name AdminContact@<sample company domain>."
 
-**Confidence:** high - official SEC primary source.
+**Confidence:** high - official SEC primary source, directly verified.

@@ -53,11 +53,11 @@ The unique ID of an accepted submission, format `XXXXXXXXXX-YY-NNNNNN`: (Source:
 
 ## Fair-access rules (important)
 
-- **10 requests/second** hard cap **per user/IP**, regardless of machine count. (Source: [[SEC.gov - New Rate Control Limits]])
-- A descriptive **User-Agent header** (organization name + contact email) is **required**; requests without it are blocked.
-- Exceeding the limit returns **HTTP 403** and blocks the IP for ~**10 minutes**.
+- **10 requests/second** hard cap **per user/IP**, regardless of machine count. (Source: [[SEC.gov - New Rate Control Limits]]; verified verbatim from sec.gov Developer Resources and "Accessing EDGAR Data," 2026-06-29.)
+- A descriptive **User-Agent header** is **required**. SEC's own sample format: `User-Agent: Sample Company Name AdminContact@<company domain>`. Requests without it are blocked.
+- Exceeding the limit returns **HTTP 403** and throttles the IP.
 
-> [!note] This rate-control + User-Agent rule is the same mechanism that returned 403 to this vault's automated WebFetch attempts against sec.gov. It resolves the earlier open question on [[EDGAR APIs]].
+> [!note] **Confirmed in practice (2026-06-29):** plain `WebFetch` returned 403 against sec.gov because it sends no compliant User-Agent. A `curl`/HTTP request **with** the SEC-format User-Agent returns **HTTP 200** (verified against both `data.sec.gov` JSON APIs and sec.gov HTML pages). This resolves the earlier open question on [[EDGAR APIs]] and is the supported way to read SEC primary sources.
 
 ## Confidence
 

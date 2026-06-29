@@ -27,6 +27,6 @@ key_claims:
 
 Official SEC description of the EDGAR system: purpose, accepted formats, operating hours, scale, and public access. Primary authoritative source for [[EDGAR]].
 
-> [!note] Facts captured via web-search excerpt; direct WebFetch of sec.gov returned HTTP 403 (bot block). Re-confirm specific figures directly in a browser if precision is critical.
+> [!note] **Verified 2026-06-29** via a direct sec.gov request with a compliant User-Agent (HTTP 200). Confirmed verbatim: "about 4,700 filings per day, serves up 3,000 terabytes of data to the public annually, and accommodates 40,000 new filers per year on average." Earlier WebFetch 403s were due to a missing User-Agent header, not a hard block.
 
-**Confidence:** high - official SEC primary source.
+**Confidence:** high - official SEC primary source, directly verified.

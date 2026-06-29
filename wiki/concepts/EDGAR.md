@@ -38,10 +38,12 @@ EDGAR automates the receipt, processing, and distribution of registration statem
 
 ## Scale
 
-- Processes roughly **3,000–4,700 filings per day** (Source: [[SEC.gov - About EDGAR]])
+Verified directly from sec.gov (2026-06-29, compliant User-Agent request):
+
+- Processes about **4,700 filings per day** (Source: [[SEC.gov - About EDGAR]])
+- Serves up **3,000 terabytes** of data to the public annually
+- Accommodates **40,000 new filers per year** on average
 - Holds **17+ million filings** as of May 2025 (Source: [[Wikipedia - EDGAR]])
-- Serves thousands of terabytes of data to the public annually
-- Accommodates tens of thousands of new filers per year
 
 > [!note] Different sources cite different headline counts (e.g., "36 million documents," "17 million filings"). The discrepancy is documents vs. filing submissions - a single filing contains multiple documents.
 
