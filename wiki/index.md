@@ -23,7 +23,7 @@ related:
 
 # Wiki Index
 
-Last updated: 2026-06-29 | Total pages: 52 + 13 (Mode D scaffold) + 75 (SEC/EDGAR autoresearch, 8 passes) | Sources ingested: 8
+Last updated: 2026-06-29 | Total pages: 52 + 13 (Mode D scaffold) + 82 (SEC/EDGAR autoresearch, 9 passes) | Sources ingested: 8
 
 Navigation: [[overview]] | [[log]] | [[hot]] | [[dashboard]] | [[Wiki Map]] | [[getting-started]]
 
@@ -80,6 +80,9 @@ Navigation: [[overview]] | [[log]] | [[hot]] | [[dashboard]] | [[Wiki Map]] | [[
 - [[SEC Whistleblower Program]] - Dodd-Frank bounty: 10-30% of >$1M sanctions (status: developing)
 - [[EDGAR Data Access]] - CIK, accession-number format, and the 10 req/s + User-Agent fair-access rules (status: developing)
 - [[EDGAR Bulk Data]] - Financial Statement Data Sets (SUB/NUM/TAG/PRE), full-index, DERA library (status: developing)
+- [[Proxy Statement]] - DEF 14A / Schedule 14A under Section 14(a); director elections, auditor, say-on-pay (status: developing)
+- [[Universal Proxy]] - Rule 14a-19; one card lists all sides' nominees in a contested election (status: developing)
+- [[Rule 14a-8 Shareholder Proposals]] - getting a shareholder proposal into the company proxy (status: developing)
 
 ---
 
@@ -119,6 +122,7 @@ Navigation: [[overview]] | [[log]] | [[hot]] | [[dashboard]] | [[Wiki Map]] | [[
 - _Reg S-K / S-X cluster (2026-06-29):_ [[Cornell LII - Regulation S-K]], [[Cornell LII - Regulation S-X]], [[CFO Bridge - Regulation S-X vs S-K]]
 - _Enforcement & structure cluster (2026-06-29):_ [[SEC.gov - Organizational Chart]], [[Winston & Strawn - SEC Investigations Primer]], [[Wikipedia - SEC Office of the Whistleblower]]
 - _EDGAR data access cluster (2026-06-29):_ [[SEC.gov - Accessing EDGAR Data]], [[SEC.gov - Financial Statement Data Sets]], [[SEC.gov - New Rate Control Limits]]
+- _Proxy cluster (2026-06-29, SEC primaries fetched directly):_ [[SEC.gov - Universal Proxy]], [[SEC.gov - Proxy Rules and Schedules 14A 14C]], [[Cornell LII - Schedule 14A (Rule 14a-101)]], [[Debevoise - Shareholder Proposals under Rule 14a-8]]
 
 ---
 

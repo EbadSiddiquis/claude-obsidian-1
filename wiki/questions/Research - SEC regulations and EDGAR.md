@@ -84,6 +84,13 @@ The Securities Act requires registration unless an exemption applies ([[Exempt O
 - **[[Regulation S-X]]** (17 CFR Part 210) governs the **form and content of financial statements** - a technical rule working alongside US GAAP, including auditor independence, acquired-business financials (Rule 3-05), and significance tests (Rule 1-02(w)). (Source: [[Regulation S-X]])
 - Mental model: **S-K = the words, S-X = the numbers, the forms = the containers.** The same S-K + S-X items populate both a registration statement (1933 Act) and periodic reports (1934 Act).
 
+## Proxy Solicitation (Pass 9 — first pass using SEC primary sources directly)
+
+- A **[[Proxy Statement]]** (DEF 14A, Schedule 14A) is required under **Section 14(a)** of the Exchange Act whenever a company solicits shareholder votes. The SEC defines a "solicitation" broadly: **any communication reasonably calculated to procure, withhold, or revoke a proxy**. (Source: [[SEC.gov - Proxy Rules and Schedules 14A 14C]], fetched directly)
+- **Say-on-pay** is a Dodd-Frank **advisory** (non-binding) vote on executive compensation; the materials are still a Section 14(a) solicitation.
+- **[[Universal Proxy]]** (Rule 14a-19, adopted Nov 2021, effective Jan 31 2022, applies to elections after Aug 31 2022): contested director elections must use one card listing **all nominees of all sides**. Dissidents must solicit **>=67%** of voting power and meet 60/50/25-day deadlines. (Source: [[SEC.gov - Universal Proxy]], fetched directly)
+- **[[Rule 14a-8 Shareholder Proposals]]** is the separate path for putting a shareholder *proposal* (not a nominee) into the company proxy, subject to enumerated exclusion grounds and SEC no-action letters.
+
 ## Key Entities
 
 - [[U.S. Securities and Exchange Commission]]: the federal regulator that administers securities law and operates EDGAR.
@@ -122,6 +129,7 @@ The Securities Act requires registration unless an exemption applies ([[Exempt O
 - [[Regulation D]], [[Regulation A]], [[Accredited Investor]], [[Rule 144]]: the private-capital and resale exemptions.
 - [[Regulation S-K]], [[Regulation S-X]], [[Integrated Disclosure System]]: the narrative and financial-statement disclosure rulebooks.
 - [[SEC Divisions and Structure]], [[SEC Enforcement Process]], [[SEC Whistleblower Program]]: how the agency is organized and enforces the law.
+- [[Proxy Statement]], [[Universal Proxy]], [[Rule 14a-8 Shareholder Proposals]]: shareholder-voting and proxy-solicitation rules.
 
 ## Contradictions
 
@@ -165,3 +173,4 @@ The Securities Act requires registration unless an exemption applies ([[Exempt O
 - **Pass 6 (2026-06-29):** Disclosure rulebooks - Regulation S-K, Regulation S-X, Integrated Disclosure System. 6 pages filed.
 - **Pass 7 (2026-06-29):** SEC structure & enforcement - Divisions/DERA, Enforcement Process (Wells), Whistleblower Program. 6 pages filed. Wiki-lint (full vault, 146 pages): 0 dead links / 0 orphans across 32 loop pages.
 - **Pass 8 (2026-06-29):** Practical EDGAR data access - EDGAR Data Access (CIK/accession/rate limits), EDGAR Bulk Data. 5 pages filed; resolved the long-standing API rate-limit open question (10 req/s + User-Agent). Planned backlog complete.
+- **Pass 9 (2026-06-29):** Proxy solicitation - Proxy Statement (Schedule 14A / say-on-pay), Universal Proxy (Rule 14a-19), Rule 14a-8 shareholder proposals. 7 pages filed. FIRST pass to pull SEC primary sources directly via scripts/sec-fetch.sh (verified verbatim), per the new operating principle.

@@ -23,6 +23,14 @@ Entry format: `## [YYYY-MM-DD] operation | Title`
 
 Parse recent entries: `grep "^## \[" wiki/log.md | head -10`
 
+## [2026-06-29] autoresearch | SEC regulations and EDGAR (pass 9: proxy solicitation)
+- Rounds: 1 (2 search angles + 2 SEC primary fetches via scripts/sec-fetch.sh)
+- Sources found: 4 (2 SEC.gov fetched DIRECTLY + verified, Cornell LII, Debevoise)
+- Pages created: [[Proxy Statement]], [[Universal Proxy]], [[Rule 14a-8 Shareholder Proposals]] + 4 source pages (7 total)
+- Method note: FIRST pass to apply the new operating principle - pulled SEC primary sources directly with the compliant-User-Agent wrapper instead of relying on search excerpts. Captured exact rule cites (14a-19(e), 67% solicitation threshold, 60/50/25-day deadlines, release 34-93596) verbatim.
+- Synthesis: [[Research - SEC regulations and EDGAR]] (Pass 9 section)
+- Key finding: Proxy statements (DEF 14A / Schedule 14A) are governed by Section 14(a); "solicitation" is defined broadly. Say-on-pay is an advisory Dodd-Frank vote. Universal proxy (Rule 14a-19, effective 2022) forces one card listing all sides' nominees in contests, lowering the bar for activists. Rule 14a-8 is the separate shareholder-proposal path.
+
 ## [2026-06-29] autoresearch | SEC regulations and EDGAR (pass 8: practical EDGAR data access)
 - Rounds: 1 (3 search angles)
 - Sources found: 3 (all SEC.gov: Accessing EDGAR Data, Financial Statement Data Sets, New Rate Control Limits)
