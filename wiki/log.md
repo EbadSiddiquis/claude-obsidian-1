@@ -23,6 +23,13 @@ Entry format: `## [YYYY-MM-DD] operation | Title`
 
 Parse recent entries: `grep "^## \[" wiki/log.md | head -10`
 
+## [2026-06-29] autoresearch | SEC regulations and EDGAR (pass 8: practical EDGAR data access)
+- Rounds: 1 (3 search angles)
+- Sources found: 3 (all SEC.gov: Accessing EDGAR Data, Financial Statement Data Sets, New Rate Control Limits)
+- Pages created: [[EDGAR Data Access]], [[EDGAR Bulk Data]] + 3 source pages (5 total); also resolved the rate-limit gap in [[EDGAR APIs]]
+- Synthesis: [[Research - SEC regulations and EDGAR]] (Pass 8 section; planned backlog complete)
+- Key finding: CIK = permanent 10-digit filer ID; accession number = submitterCIK-YY-sequential. Fair access = 10 req/s per IP + required User-Agent header; violations return HTTP 403 + ~10-min block (this is exactly why sec.gov 403'd this vault's WebFetches). Bulk analysis via Financial Statement Data Sets (SUB/NUM/TAG/PRE, since Apr 2009, monthly from Apr 2023), full-index, and DERA Data Library.
+
 ## [2026-06-29] autoresearch | SEC regulations and EDGAR (pass 7: structure & enforcement + lint)
 - Rounds: 1 (3 search angles)
 - Sources found: 3 (SEC.gov org chart, Winston & Strawn, Wikipedia)

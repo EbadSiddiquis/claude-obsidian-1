@@ -52,9 +52,12 @@ CIK numbers are zero-padded to 10 digits in API paths.
 
 ## Fair access
 
-The SEC requests that automated clients declare a descriptive **User-Agent header** (with contact info) and observe a fair-access rate limit.
+The SEC requires automated clients to declare a descriptive **User-Agent header** (organization name + contact email) and observe a fair-access rate limit.
 
-> [!gap] The commonly cited limit is **10 requests/second**, but the exact current figure was not re-verified from SEC.gov in this pass (SEC.gov blocked automated fetch). Confirm against the official Developer Resources page.
+- **Rate limit: 10 requests/second** per user/IP, regardless of machine count. Exceeding it returns **HTTP 403** and blocks the IP for ~10 minutes. (Resolved in Pass 8 - see [[EDGAR Data Access]].)
+- Requests without a User-Agent header are blocked.
+
+> [!note] This is the same rate-control/User-Agent mechanism that returned 403 to this vault's automated `WebFetch` against sec.gov throughout this research. See [[EDGAR Data Access]] for CIK / accession-number detail.
 
 ## Confidence
 

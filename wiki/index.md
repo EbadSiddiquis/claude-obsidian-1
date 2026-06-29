@@ -23,7 +23,7 @@ related:
 
 # Wiki Index
 
-Last updated: 2026-06-29 | Total pages: 52 + 13 (Mode D scaffold) + 70 (SEC/EDGAR autoresearch, 7 passes) | Sources ingested: 8
+Last updated: 2026-06-29 | Total pages: 52 + 13 (Mode D scaffold) + 75 (SEC/EDGAR autoresearch, 8 passes) | Sources ingested: 8
 
 Navigation: [[overview]] | [[log]] | [[hot]] | [[dashboard]] | [[Wiki Map]] | [[getting-started]]
 
@@ -78,6 +78,8 @@ Navigation: [[overview]] | [[log]] | [[hot]] | [[dashboard]] | [[Wiki Map]] | [[
 - [[SEC Divisions and Structure]] - the five divisions (Corp Fin, Enforcement, Trading & Markets, IM, DERA) (status: developing)
 - [[SEC Enforcement Process]] - investigation, Wells notice/submission, admin vs federal-court action (status: developing)
 - [[SEC Whistleblower Program]] - Dodd-Frank bounty: 10-30% of >$1M sanctions (status: developing)
+- [[EDGAR Data Access]] - CIK, accession-number format, and the 10 req/s + User-Agent fair-access rules (status: developing)
+- [[EDGAR Bulk Data]] - Financial Statement Data Sets (SUB/NUM/TAG/PRE), full-index, DERA library (status: developing)
 
 ---
 
@@ -116,6 +118,7 @@ Navigation: [[overview]] | [[log]] | [[hot]] | [[dashboard]] | [[Wiki Map]] | [[
 - _Exemptions cluster (2026-06-29):_ [[SEC.gov - Private Placements Rule 506]], [[SEC.gov - Regulation A]], [[SEC.gov - Accredited Investor Definition Amendments]], [[SEC.gov - Rule 144]], [[Carta - 506(b) vs 506(c) Guide]]
 - _Reg S-K / S-X cluster (2026-06-29):_ [[Cornell LII - Regulation S-K]], [[Cornell LII - Regulation S-X]], [[CFO Bridge - Regulation S-X vs S-K]]
 - _Enforcement & structure cluster (2026-06-29):_ [[SEC.gov - Organizational Chart]], [[Winston & Strawn - SEC Investigations Primer]], [[Wikipedia - SEC Office of the Whistleblower]]
+- _EDGAR data access cluster (2026-06-29):_ [[SEC.gov - Accessing EDGAR Data]], [[SEC.gov - Financial Statement Data Sets]], [[SEC.gov - New Rate Control Limits]]
 
 ---
 

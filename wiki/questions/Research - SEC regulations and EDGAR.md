@@ -96,6 +96,12 @@ The Securities Act requires registration unless an exemption applies ([[Exempt O
 - **[[SEC Enforcement Process]]:** investigation -> **Wells notice** -> Wells submission -> charge or close; actions run as **SEC administrative proceedings** or **federal-court civil suits**; most settle (recent reforms separate settlement from the Wells submission).
 - **[[SEC Whistleblower Program]]** (Dodd-Frank 2010): pays **10-30%** of sanctions when collections exceed **$1M**, from the Investor Protection Fund, with anti-retaliation protection.
 
+## Practical EDGAR Data Access (Pass 8)
+
+- **[[EDGAR Data Access|CIK]]** (Central Index Key) is a permanent **10-digit** filer ID that never changes; it is the reliable key for tracking an entity across renames/ticker changes. **Accession numbers** encode `submitterCIK-YY-sequential`. (Source: [[EDGAR Data Access]])
+- **Fair access:** a hard **10 requests/second** cap per IP and a required descriptive **User-Agent header**; violations return **HTTP 403** + ~10-minute block. **This is exactly why sec.gov returned 403 to this vault's automated fetches** - the standing "Open Question" on API limits is now closed. (Source: [[EDGAR Data Access]])
+- **[[EDGAR Bulk Data]]:** for cross-company analysis, the SEC publishes **Financial Statement Data Sets** (XBRL extracts, tables SUB/NUM/TAG/PRE, since Apr 2009, monthly from Apr 2023), full-index files, and the DERA Data Library. (Source: [[EDGAR Bulk Data]])
+
 ## Key Concepts
 
 - [[EDGAR]]: the SEC's electronic filing and dissemination system.
@@ -124,14 +130,15 @@ The Securities Act requires registration unless an exemption applies ([[Exempt O
 
 ## Open Questions
 
-- **EDGAR API rate limits:** the exact current fair-access limit (commonly cited as 10 req/s) was not re-verified - SEC.gov blocked automated fetch (HTTP 403). Confirm from the official Developer Resources page.
+- ~~**EDGAR API rate limits:**~~ RESOLVED in Pass 8: 10 requests/second per IP + required User-Agent header; violations return HTTP 403 + ~10-min block. See [[EDGAR Data Access]].
 - **EDGAR Next machine-to-machine filing:** how API tokens / technical-administrator roles work for automated filing under the new model needs a dedicated pass.
 - **XBRL & structured-data mandate:** covered in Pass 3 (XBRL/iXBRL + FDTA). Remaining: exact FDTA 2026 final-rule effective date; per-agency SEC implementing rules.
 - **Recent rulemaking (2023-2026):** covered in Pass 4 (cyber, climate, buybacks, T+1). Remaining: precise 2026 climate-rescission final text; any new 2026 disclosure proposals.
 - **Regulation S-K / S-X:** covered in Pass 6. Remaining: specific S-K item numbers beyond 303/106; S-X article-by-article detail.
 - **Exemptions:** covered in Pass 5 (Reg D, Reg A, Rule 144, accredited investor) and Pass 2 (Reg CF). Remaining: Section 4(a)(2) case law; intrastate (Rule 147/147A); pending accredited-investor expansion legislation.
 - **SEC enforcement & structure:** covered in Pass 7 (divisions, Wells process, whistleblower). Remaining: examinations (Division of Examinations), the gag-rule/Rule 102(e) detail.
-- **Practical EDGAR data access:** CIK/ticker mapping, accession-number format, bulk datasets (financial statement datasets, full-index) still open.
+- **Practical EDGAR data access:** covered in Pass 8 (CIK, accession format, bulk datasets, rate limits). Planned backlog now complete.
+- **Possible future clusters:** proxy solicitation (Section 14 / Schedule 14A), tender offers (Williams Act / Schedule TO), municipal securities & the MSRB, Investment Advisers Act detail (Form ADV), SPACs, Section 16 insider trading mechanics.
 - **Reg CF financial-statement tiers:** exact dollar thresholds for self-certified vs reviewed vs audited financials (Rule 201(t)) still need verification.
 
 ## Sources
@@ -157,3 +164,4 @@ The Securities Act requires registration unless an exemption applies ([[Exempt O
 - **Pass 5 (2026-06-29):** Private-offering exemptions - Exempt Offerings umbrella, Regulation D (506b/506c), Regulation A (Tier 1/2), Accredited Investor, Rule 144. 11 pages filed.
 - **Pass 6 (2026-06-29):** Disclosure rulebooks - Regulation S-K, Regulation S-X, Integrated Disclosure System. 6 pages filed.
 - **Pass 7 (2026-06-29):** SEC structure & enforcement - Divisions/DERA, Enforcement Process (Wells), Whistleblower Program. 6 pages filed. Wiki-lint (full vault, 146 pages): 0 dead links / 0 orphans across 32 loop pages.
+- **Pass 8 (2026-06-29):** Practical EDGAR data access - EDGAR Data Access (CIK/accession/rate limits), EDGAR Bulk Data. 5 pages filed; resolved the long-standing API rate-limit open question (10 req/s + User-Agent). Planned backlog complete.
