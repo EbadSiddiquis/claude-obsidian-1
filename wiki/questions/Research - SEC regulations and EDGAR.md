@@ -52,6 +52,13 @@ U.S. securities regulation rests on a **mandatory-disclosure** model: the [[U.S.
 - Issuers file **[[Form C]]** before the raise and **Form C-AR** annually (within 120 days of FY-end) on EDGAR. (Source: [[Form C]])
 - Market is concentrated: 2025 Reg CF dollars led by **[[Wefunder]]** (~$109M, ~33%), **[[StartEngine]]** (~$89M, ~24%), DealMaker (~$66M), **[[Republic (crowdfunding)|Republic]]** (~$20M). (Source: [[Angel Investors Network - Reg CF Platform Comparison]])
 
+## XBRL & Structured Data (Pass 3)
+
+- **[[XBRL]]** (eXtensible Business Reporting Language) is the structured-data standard for financial info in EDGAR filings: each figure is tagged against the FASB **US GAAP taxonomy** (~17,000 tags) so filings are machine-readable. (Source: [[XBRL]])
+- **Inline XBRL (iXBRL)** embeds tags directly in the HTML filing (one human- + machine-readable document). Adopted June 28, 2018; phased in by filer size FY-ends June 2019 -> June 2021. Required for cover page + financials in 10-K/10-Q and parts of 8-K/proxy. (Source: [[XBRL]])
+- XBRL history: mandate began **2009** (large accelerated filers), all filers by **2012**; this XBRL data powers the [[EDGAR APIs]]. (Source: [[XBRL]])
+- The **[[Financial Data Transparency Act]]** (FDTA, Dec 2022) extends machine-readable standards across **nine federal agencies** (incl. SEC, Treasury, Fed, FDIC, CFTC...). Adopts a common **LEI (ISO 17442)**; standardizes format without requiring new data collection. Proposed Aug 2024; final joint rule in 2026. (Source: [[Financial Data Transparency Act]])
+
 ## Key Entities
 
 - [[U.S. Securities and Exchange Commission]]: the federal regulator that administers securities law and operates EDGAR.
@@ -68,6 +75,8 @@ U.S. securities regulation rests on a **mandatory-disclosure** model: the [[U.S.
 - [[Regulation Crowdfunding]]: the Reg CF exemption (Title III JOBS Act); $5M public raises via registered intermediaries.
 - [[Funding Portal]]: FINRA-member Reg CF intermediary; lighter-weight than a broker-dealer.
 - [[Form C]]: the Reg CF offering statement (plus C-AR annual report) filed on EDGAR.
+- [[XBRL]]: structured-data tagging standard (inline XBRL) for EDGAR financial filings.
+- [[Financial Data Transparency Act]]: 2022 law mandating uniform machine-readable data across nine financial regulators.
 
 ## Contradictions
 
@@ -78,7 +87,7 @@ U.S. securities regulation rests on a **mandatory-disclosure** model: the [[U.S.
 
 - **EDGAR API rate limits:** the exact current fair-access limit (commonly cited as 10 req/s) was not re-verified - SEC.gov blocked automated fetch (HTTP 403). Confirm from the official Developer Resources page.
 - **EDGAR Next machine-to-machine filing:** how API tokens / technical-administrator roles work for automated filing under the new model needs a dedicated pass.
-- **XBRL & structured-data mandate:** the Financial Data Transparency Act (FDTA) and inline XBRL requirements were not yet researched.
+- **XBRL & structured-data mandate:** covered in Pass 3 (XBRL/iXBRL + FDTA). Remaining: exact FDTA 2026 final-rule effective date; per-agency SEC implementing rules.
 - **Recent rulemaking (2024–2026):** climate disclosure, cybersecurity incident disclosure (8-K Item 1.05), and share-repurchase rules are not yet covered.
 - **Regulation S-K / S-X:** the detailed disclosure-content and financial-statement rules behind the forms were not yet covered.
 - **Enforcement & remaining exemptions:** Reg D (506b/506c), Reg A+, Rule 144, accredited-investor definition, and the SEC enforcement process remain open. (Reg CF covered in Pass 2.)
@@ -102,3 +111,4 @@ U.S. securities regulation rests on a **mandatory-disclosure** model: the [[U.S.
 
 - **Pass 1 (2026-06-29):** Broad sweep - laws, EDGAR system, filing types, EDGAR Next, APIs. 16 pages filed.
 - **Pass 2 (2026-06-29):** Reg CF crowdfunding funding portals - Regulation Crowdfunding, Funding Portal, Form C, FINRA, and the three leading portals (Wefunder/StartEngine/Republic). 14 pages filed.
+- **Pass 3 (2026-06-29):** XBRL & structured data - XBRL/inline XBRL, Financial Data Transparency Act, FASB. 8 pages filed.

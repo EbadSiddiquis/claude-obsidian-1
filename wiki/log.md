@@ -23,6 +23,13 @@ Entry format: `## [YYYY-MM-DD] operation | Title`
 
 Parse recent entries: `grep "^## \[" wiki/log.md | head -10`
 
+## [2026-06-29] autoresearch | SEC regulations and EDGAR (pass 3: XBRL & structured data)
+- Rounds: 2 (4 search angles + 2 depth fetches)
+- Sources found: 5 (2 SEC.gov, Covington, Cooley, IRIS Carbon)
+- Pages created: [[XBRL]], [[Financial Data Transparency Act]], [[Financial Accounting Standards Board]] + 5 source pages (8 total)
+- Synthesis: [[Research - SEC regulations and EDGAR]] (Pass 3 section added)
+- Key finding: SEC has required XBRL since 2009 and inline XBRL since 2018 (phased 2019-2021); financial data is tagged against FASB's ~17k-tag US GAAP taxonomy and powers the EDGAR APIs. The 2022 FDTA extends machine-readable standards across nine federal regulators with a common LEI; final joint rule in 2026.
+
 ## [2026-06-29] autoresearch | SEC regulations and EDGAR (pass 2: Reg CF funding portals)
 - Rounds: 2 (4 search angles + 2 depth fetches)
 - Sources found: 7 (3 SEC.gov, 1 FINRA, 3 secondary/market)
