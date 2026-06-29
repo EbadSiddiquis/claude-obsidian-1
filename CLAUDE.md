@@ -78,6 +78,29 @@ Pick an organizational style for the vault via `bash bin/setup-mode.sh`. Four mo
 
 After staging changes for a non-trivial workstream but BEFORE running `git commit`, dispatch the `verifier` agent (`agents/verifier.md`). It reads `git diff --cached`, applies the /best-practices six-cut + agent kernel, and returns findings in four tiers (BLOCKER / HIGH / MEDIUM / LOW) with file:line citations. The agent has read-only tools (Read, Grep, Glob, Bash) — it can inspect but never modify, so its output is purely advisory. This closes the loop the v1.7 audit revealed: code went worker → commit with no separate verifier pass, which is how BLOCKER B1 (data-egress consent gap) slipped through. See `docs/audits/v1.7.0-audit-2026-05-17.md` §10 for the retrospective.
 
+## SEC / EDGAR Primary-Source Access (IMPORTANT — read before fetching sec.gov)
+
+**The `WebFetch` tool gets HTTP 403 from sec.gov.** This is NOT a hard block — SEC's
+fair-access policy simply *requires* a declared `User-Agent` (with contact info) and
+caps traffic at **10 requests/second**. A request *with* that header returns HTTP 200,
+for both sec.gov HTML pages (server-rendered, no JS) and the `data.sec.gov` JSON APIs.
+
+**Do not use `WebFetch` for sec.gov. Use the wrapper instead:**
+
+```bash
+export SEC_CONTACT_EMAIL="you@example.com"        # SEC expects a real contact
+bash scripts/sec-fetch.sh "https://www.sec.gov/<path>"                 # raw HTML/JSON
+bash scripts/sec-fetch.sh --text "https://www.sec.gov/<path>"          # HTML -> plain text
+bash scripts/sec-fetch.sh "https://data.sec.gov/submissions/CIK##########.json"
+```
+
+High-value `data.sec.gov` endpoints (no API key needed): `submissions/CIK##########.json`
+(all of a filer's filings), `api/xbrl/companyfacts/CIK##########.json` (all XBRL facts),
+`api/xbrl/companyconcept/...`, `api/xbrl/frames/...`. CIK is the permanent 10-digit filer
+ID (zero-padded in API paths). Full method + identifiers: [[EDGAR Data Access]],
+[[EDGAR APIs]], [[EDGAR Bulk Data]] in the wiki. (Established 2026-06-29 after WebFetch
+403s blocked SEC primary sources during the SEC/EDGAR autoresearch.)
+
 ## MCP (Optional)
 
 If you configured the MCP server, Claude can read and write vault notes directly.
