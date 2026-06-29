@@ -23,7 +23,7 @@ related:
 
 # Wiki Index
 
-Last updated: 2026-06-29 | Total pages: 52 + 13 (Mode D scaffold) + 58 (SEC/EDGAR autoresearch, 5 passes) | Sources ingested: 8
+Last updated: 2026-06-29 | Total pages: 52 + 13 (Mode D scaffold) + 64 (SEC/EDGAR autoresearch, 6 passes) | Sources ingested: 8
 
 Navigation: [[overview]] | [[log]] | [[hot]] | [[dashboard]] | [[Wiki Map]] | [[getting-started]]
 
@@ -72,6 +72,9 @@ Navigation: [[overview]] | [[log]] | [[hot]] | [[dashboard]] | [[Wiki Map]] | [[
 - [[Regulation A]] - "mini-IPO"; Tier 1 ($20M) / Tier 2 ($75M); Form 1-A (status: developing)
 - [[Accredited Investor]] - income/net-worth thresholds + Series 7/65/82 credential path (2020) (status: developing)
 - [[Rule 144]] - resale of restricted/control securities; holding periods + affiliate limits (status: developing)
+- [[Regulation S-K]] - narrative/non-financial disclosure rulebook (business, risk factors, MD&A Item 303) (status: developing)
+- [[Regulation S-X]] - financial-statement form and content (17 CFR Part 210) (status: developing)
+- [[Integrated Disclosure System]] - 1982 architecture unifying S-K, S-X, and the forms (status: developing)
 
 ---
 
@@ -108,6 +111,7 @@ Navigation: [[overview]] | [[log]] | [[hot]] | [[dashboard]] | [[Wiki Map]] | [[
 - _XBRL / structured data cluster (2026-06-29):_ [[SEC.gov - Inline XBRL]], [[SEC.gov - FDTA Joint Data Standards]], [[Covington - FDTA Implementation]], [[IRIS Carbon - 10 Years of SEC iXBRL Timeline]], [[Cooley - SEC Adopts Mandatory Inline XBRL]]
 - _Recent rulemaking cluster (2026-06-29):_ [[SEC.gov - Cybersecurity Disclosure Rules Press Release]], [[SEC.gov - Proposes Rescission of Climate Rules]], [[DLA Piper - SEC Climate Rule Litigation Update]], [[Orrick - Fifth Circuit Vacates Share Repurchase Rules]], [[Davis Polk - SEC Adopts T+1 Settlement]]
 - _Exemptions cluster (2026-06-29):_ [[SEC.gov - Private Placements Rule 506]], [[SEC.gov - Regulation A]], [[SEC.gov - Accredited Investor Definition Amendments]], [[SEC.gov - Rule 144]], [[Carta - 506(b) vs 506(c) Guide]]
+- _Reg S-K / S-X cluster (2026-06-29):_ [[Cornell LII - Regulation S-K]], [[Cornell LII - Regulation S-X]], [[CFO Bridge - Regulation S-X vs S-K]]
 
 ---
 

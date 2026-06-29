@@ -77,6 +77,13 @@ The Securities Act requires registration unless an exemption applies ([[Exempt O
 - **[[Accredited Investor]]**: income > $200k ($300k joint) or net worth > $1M (ex-residence); since Dec 2020, **Series 7/65/82** holders also qualify. (Source: [[Accredited Investor]])
 - **[[Rule 144]]** is the resale exit: 6-month (reporting) / 1-year (non-reporting) holding period; affiliates also face a 1%-or-weekly-volume cap, manner-of-sale rules, and Form 144. (Source: [[Rule 144]])
 
+## The Disclosure Rulebooks: S-K & S-X (Pass 6)
+
+- The **[[Integrated Disclosure System]]** (1982) unified SEC disclosure: two content rulebooks feed standardized forms. (Source: [[Integrated Disclosure System]])
+- **[[Regulation S-K]]** governs **narrative, non-financial** disclosure - business, risk factors, **MD&A (Item 303)**, executive compensation. (Source: [[Regulation S-K]])
+- **[[Regulation S-X]]** (17 CFR Part 210) governs the **form and content of financial statements** - a technical rule working alongside US GAAP, including auditor independence, acquired-business financials (Rule 3-05), and significance tests (Rule 1-02(w)). (Source: [[Regulation S-X]])
+- Mental model: **S-K = the words, S-X = the numbers, the forms = the containers.** The same S-K + S-X items populate both a registration statement (1933 Act) and periodic reports (1934 Act).
+
 ## Key Entities
 
 - [[U.S. Securities and Exchange Commission]]: the federal regulator that administers securities law and operates EDGAR.
@@ -101,6 +108,7 @@ The Securities Act requires registration unless an exemption applies ([[Exempt O
 - [[Recent SEC Rulemaking and Litigation 2023-2026]]: roundup of the era's rules and their fates.
 - [[Exempt Offerings]]: the menu of registration exemptions (Reg D / Reg A / Reg CF / 4(a)(2)).
 - [[Regulation D]], [[Regulation A]], [[Accredited Investor]], [[Rule 144]]: the private-capital and resale exemptions.
+- [[Regulation S-K]], [[Regulation S-X]], [[Integrated Disclosure System]]: the narrative and financial-statement disclosure rulebooks.
 
 ## Contradictions
 
@@ -113,7 +121,7 @@ The Securities Act requires registration unless an exemption applies ([[Exempt O
 - **EDGAR Next machine-to-machine filing:** how API tokens / technical-administrator roles work for automated filing under the new model needs a dedicated pass.
 - **XBRL & structured-data mandate:** covered in Pass 3 (XBRL/iXBRL + FDTA). Remaining: exact FDTA 2026 final-rule effective date; per-agency SEC implementing rules.
 - **Recent rulemaking (2023-2026):** covered in Pass 4 (cyber, climate, buybacks, T+1). Remaining: precise 2026 climate-rescission final text; any new 2026 disclosure proposals.
-- **Regulation S-K / S-X:** the detailed disclosure-content and financial-statement rules behind the forms were not yet covered.
+- **Regulation S-K / S-X:** covered in Pass 6. Remaining: specific S-K item numbers beyond 303/106; S-X article-by-article detail.
 - **Exemptions:** covered in Pass 5 (Reg D, Reg A, Rule 144, accredited investor) and Pass 2 (Reg CF). Remaining: Section 4(a)(2) case law; intrastate (Rule 147/147A); pending accredited-investor expansion legislation.
 - **SEC enforcement & structure:** divisions, the Wells process, whistleblower program, administrative vs federal-court proceedings still open.
 - **Reg CF financial-statement tiers:** exact dollar thresholds for self-certified vs reviewed vs audited financials (Rule 201(t)) still need verification.
@@ -139,3 +147,4 @@ The Securities Act requires registration unless an exemption applies ([[Exempt O
 - **Pass 3 (2026-06-29):** XBRL & structured data - XBRL/inline XBRL, Financial Data Transparency Act, FASB. 8 pages filed.
 - **Pass 4 (2026-06-29):** Recent rulemaking 2023-2026 - cybersecurity (8-K Item 1.05), climate disclosure, buyback vacatur, T+1, plus a litigation roundup. 9 pages filed. Wiki-lint run (full vault): 0 orphans, fixed 3 self-introduced dead links, flagged pre-existing ones for human review.
 - **Pass 5 (2026-06-29):** Private-offering exemptions - Exempt Offerings umbrella, Regulation D (506b/506c), Regulation A (Tier 1/2), Accredited Investor, Rule 144. 11 pages filed.
+- **Pass 6 (2026-06-29):** Disclosure rulebooks - Regulation S-K, Regulation S-X, Integrated Disclosure System. 6 pages filed.

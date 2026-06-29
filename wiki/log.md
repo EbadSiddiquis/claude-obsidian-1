@@ -23,6 +23,13 @@ Entry format: `## [YYYY-MM-DD] operation | Title`
 
 Parse recent entries: `grep "^## \[" wiki/log.md | head -10`
 
+## [2026-06-29] autoresearch | SEC regulations and EDGAR (pass 6: disclosure rulebooks S-K / S-X)
+- Rounds: 1 (3 search angles)
+- Sources found: 3 (Cornell LII x2, CFO Bridge)
+- Pages created: [[Regulation S-K]], [[Regulation S-X]], [[Integrated Disclosure System]] + 3 source pages (6 total)
+- Synthesis: [[Research - SEC regulations and EDGAR]] (Pass 6 section added)
+- Key finding: The 1982 integrated disclosure system splits content into two rulebooks: Reg S-K (narrative - business, risk factors, MD&A Item 303, exec comp) and Reg S-X (financial-statement form/content, 17 CFR Part 210, auditor independence, Rule 3-05 acquired-business financials, Rule 1-02(w) significance tests). The same S-K + S-X items populate both registration statements and periodic reports.
+
 ## [2026-06-29] autoresearch | SEC regulations and EDGAR (pass 5: private-offering exemptions)
 - Rounds: 1 (4 search angles, detailed SEC/law excerpts)
 - Sources found: 5 (4 SEC.gov, Carta)
