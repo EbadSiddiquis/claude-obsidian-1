@@ -23,6 +23,13 @@ Entry format: `## [YYYY-MM-DD] operation | Title`
 
 Parse recent entries: `grep "^## \[" wiki/log.md | head -10`
 
+## [2026-06-29] autoresearch | SEC regulations and EDGAR (pass 5: private-offering exemptions)
+- Rounds: 1 (4 search angles, detailed SEC/law excerpts)
+- Sources found: 5 (4 SEC.gov, Carta)
+- Pages created: [[Exempt Offerings]], [[Regulation D]], [[Regulation A]], [[Accredited Investor]], [[Rule 144]] + 5 source pages (11 total)
+- Synthesis: [[Research - SEC regulations and EDGAR]] (Pass 5 section added)
+- Key finding: Reg D Rule 506 is the dominant private exemption (506(b) no-solicitation/35 non-accredited vs 506(c) accredited-only-with-verification, both Form D). Reg A is a public mini-IPO ($20M Tier 1 / $75M Tier 2, Form 1-A). Accredited status = $200k income or $1M net worth, plus Series 7/65/82 since 2020. Rule 144 governs resale (6mo/1yr holding; affiliate volume caps).
+
 ## [2026-06-29] autoresearch | SEC regulations and EDGAR (pass 4: recent rulemaking + lint)
 - Rounds: 1 (4 search angles, detailed law-firm/SEC excerpts; no extra fetch needed)
 - Sources found: 5 (2 SEC.gov, DLA Piper, Orrick, Davis Polk)

@@ -23,7 +23,7 @@ related:
 
 # Wiki Index
 
-Last updated: 2026-06-29 | Total pages: 52 + 13 (Mode D scaffold) + 47 (SEC/EDGAR autoresearch, 4 passes) | Sources ingested: 8
+Last updated: 2026-06-29 | Total pages: 52 + 13 (Mode D scaffold) + 58 (SEC/EDGAR autoresearch, 5 passes) | Sources ingested: 8
 
 Navigation: [[overview]] | [[log]] | [[hot]] | [[dashboard]] | [[Wiki Map]] | [[getting-started]]
 
@@ -67,6 +67,11 @@ Navigation: [[overview]] | [[log]] | [[hot]] | [[dashboard]] | [[Wiki Map]] | [[
 - [[SEC Climate Disclosure Rule]] - adopted 2024, stayed, rescission proposed 2026 (status: developing)
 - [[T+1 Settlement Cycle]] - one-business-day settlement (Rule 15c6-1), effective May 2024 (status: developing)
 - [[Recent SEC Rulemaking and Litigation 2023-2026]] - roundup: which rules took effect vs were vacated/stayed (status: developing)
+- [[Exempt Offerings]] - the menu of Securities Act registration exemptions (Reg D / A / CF / 4(a)(2)) (status: developing)
+- [[Regulation D]] - Rule 506(b)/506(c) private placements; the most-used exemption; Form D (status: developing)
+- [[Regulation A]] - "mini-IPO"; Tier 1 ($20M) / Tier 2 ($75M); Form 1-A (status: developing)
+- [[Accredited Investor]] - income/net-worth thresholds + Series 7/65/82 credential path (2020) (status: developing)
+- [[Rule 144]] - resale of restricted/control securities; holding periods + affiliate limits (status: developing)
 
 ---
 
@@ -102,6 +107,7 @@ Navigation: [[overview]] | [[log]] | [[hot]] | [[dashboard]] | [[Wiki Map]] | [[
 - _Reg CF / funding portals cluster (2026-06-29):_ [[SEC.gov - Regulation Crowdfunding]], [[SEC.gov - Registration of Funding Portals]], [[SEC.gov - Staff Guidance on EDGAR Filing of Form C]], [[FINRA - Funding Portals]], [[MicroVentures - Funding Portals vs Broker-Dealers]], [[crowdfundingattorney.com - 2026 Reg CF Guidance]], [[Angel Investors Network - Reg CF Platform Comparison]]
 - _XBRL / structured data cluster (2026-06-29):_ [[SEC.gov - Inline XBRL]], [[SEC.gov - FDTA Joint Data Standards]], [[Covington - FDTA Implementation]], [[IRIS Carbon - 10 Years of SEC iXBRL Timeline]], [[Cooley - SEC Adopts Mandatory Inline XBRL]]
 - _Recent rulemaking cluster (2026-06-29):_ [[SEC.gov - Cybersecurity Disclosure Rules Press Release]], [[SEC.gov - Proposes Rescission of Climate Rules]], [[DLA Piper - SEC Climate Rule Litigation Update]], [[Orrick - Fifth Circuit Vacates Share Repurchase Rules]], [[Davis Polk - SEC Adopts T+1 Settlement]]
+- _Exemptions cluster (2026-06-29):_ [[SEC.gov - Private Placements Rule 506]], [[SEC.gov - Regulation A]], [[SEC.gov - Accredited Investor Definition Amendments]], [[SEC.gov - Rule 144]], [[Carta - 506(b) vs 506(c) Guide]]
 
 ---
 

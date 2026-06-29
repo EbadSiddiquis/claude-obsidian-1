@@ -68,6 +68,15 @@ The era's rules split by type ([[Recent SEC Rulemaking and Litigation 2023-2026]
 - **Stayed -> rescission proposed:** the [[SEC Climate Disclosure Rule]] (Mar 2024) was stayed Apr 2024, the SEC dropped its defense Mar 2025, and a **2026 rescission** is now proposed. (Source: [[SEC Climate Disclosure Rule]])
 - Pattern: disclosure-expansion mandates drew successful APA / major-questions challenges; operational rules (T+1, cyber-incident) stuck.
 
+## Private-Offering Exemptions (Pass 5)
+
+The Securities Act requires registration unless an exemption applies ([[Exempt Offerings]]):
+
+- **[[Regulation D]]** is the private workhorse. **Rule 506(b)**: no general solicitation, unlimited accredited + up to 35 sophisticated, self-verification. **Rule 506(c)**: general solicitation allowed but accredited-only with "reasonable steps to verify." Both file a **Form D** within 15 days of first sale. (Source: [[Regulation D]])
+- **[[Regulation A]]** ("mini-IPO") is public-facing: **Tier 1 up to $20M**, **Tier 2 up to $75M** per 12 months, via **Form 1-A** qualified by the SEC; Tier 2 preempts state review. (Source: [[Regulation A]])
+- **[[Accredited Investor]]**: income > $200k ($300k joint) or net worth > $1M (ex-residence); since Dec 2020, **Series 7/65/82** holders also qualify. (Source: [[Accredited Investor]])
+- **[[Rule 144]]** is the resale exit: 6-month (reporting) / 1-year (non-reporting) holding period; affiliates also face a 1%-or-weekly-volume cap, manner-of-sale rules, and Form 144. (Source: [[Rule 144]])
+
 ## Key Entities
 
 - [[U.S. Securities and Exchange Commission]]: the federal regulator that administers securities law and operates EDGAR.
@@ -90,6 +99,8 @@ The era's rules split by type ([[Recent SEC Rulemaking and Litigation 2023-2026]
 - [[SEC Climate Disclosure Rule]]: adopted 2024, stayed, rescission proposed 2026.
 - [[T+1 Settlement Cycle]]: one-day settlement, effective May 2024.
 - [[Recent SEC Rulemaking and Litigation 2023-2026]]: roundup of the era's rules and their fates.
+- [[Exempt Offerings]]: the menu of registration exemptions (Reg D / Reg A / Reg CF / 4(a)(2)).
+- [[Regulation D]], [[Regulation A]], [[Accredited Investor]], [[Rule 144]]: the private-capital and resale exemptions.
 
 ## Contradictions
 
@@ -103,7 +114,8 @@ The era's rules split by type ([[Recent SEC Rulemaking and Litigation 2023-2026]
 - **XBRL & structured-data mandate:** covered in Pass 3 (XBRL/iXBRL + FDTA). Remaining: exact FDTA 2026 final-rule effective date; per-agency SEC implementing rules.
 - **Recent rulemaking (2023-2026):** covered in Pass 4 (cyber, climate, buybacks, T+1). Remaining: precise 2026 climate-rescission final text; any new 2026 disclosure proposals.
 - **Regulation S-K / S-X:** the detailed disclosure-content and financial-statement rules behind the forms were not yet covered.
-- **Enforcement & remaining exemptions:** Reg D (506b/506c), Reg A+, Rule 144, accredited-investor definition, and the SEC enforcement process remain open. (Reg CF covered in Pass 2.)
+- **Exemptions:** covered in Pass 5 (Reg D, Reg A, Rule 144, accredited investor) and Pass 2 (Reg CF). Remaining: Section 4(a)(2) case law; intrastate (Rule 147/147A); pending accredited-investor expansion legislation.
+- **SEC enforcement & structure:** divisions, the Wells process, whistleblower program, administrative vs federal-court proceedings still open.
 - **Reg CF financial-statement tiers:** exact dollar thresholds for self-certified vs reviewed vs audited financials (Rule 201(t)) still need verification.
 
 ## Sources
@@ -126,3 +138,4 @@ The era's rules split by type ([[Recent SEC Rulemaking and Litigation 2023-2026]
 - **Pass 2 (2026-06-29):** Reg CF crowdfunding funding portals - Regulation Crowdfunding, Funding Portal, Form C, FINRA, and the three leading portals (Wefunder/StartEngine/Republic). 14 pages filed.
 - **Pass 3 (2026-06-29):** XBRL & structured data - XBRL/inline XBRL, Financial Data Transparency Act, FASB. 8 pages filed.
 - **Pass 4 (2026-06-29):** Recent rulemaking 2023-2026 - cybersecurity (8-K Item 1.05), climate disclosure, buyback vacatur, T+1, plus a litigation roundup. 9 pages filed. Wiki-lint run (full vault): 0 orphans, fixed 3 self-introduced dead links, flagged pre-existing ones for human review.
+- **Pass 5 (2026-06-29):** Private-offering exemptions - Exempt Offerings umbrella, Regulation D (506b/506c), Regulation A (Tier 1/2), Accredited Investor, Rule 144. 11 pages filed.
