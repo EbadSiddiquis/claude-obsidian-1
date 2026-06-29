@@ -1,0 +1,104 @@
+{
+  "offering_type": "Rule 506(b)",
+  "note": "Control framework for a Regulation D Rule 506(b) private placement. Decomposed from 17 CFR 230.501-503, 230.506(b)(d)(e). This is a template for counsel sign-off, not legal advice. 'eval' tells control-panel.py how to compute a control's state from public data; everything else is the static control definition.",
+  "controls": [
+    {
+      "id": "exemption_basis_506b",
+      "obligation": "The offering relies on Rule 506(b) (claimed on Form D).",
+      "authority": "17 CFR 230.506(b)",
+      "locus": "public", "owner": "issuer", "cadence": "point_in_time", "severity": "informational",
+      "eval": "exemption_is_506b"
+    },
+    {
+      "id": "no_general_solicitation",
+      "obligation": "No general solicitation or advertising was used to offer or sell the securities.",
+      "authority": "17 CFR 230.502(c)",
+      "locus": "private", "owner": "counsel", "cadence": "continuous", "severity": "exemption_fatal",
+      "eval": "no_general_solicitation"
+    },
+    {
+      "id": "nonaccredited_ceiling",
+      "obligation": "No more than 35 non-accredited purchasers; each non-accredited purchaser is sophisticated.",
+      "authority": "17 CFR 230.506(b)(2)(i)-(ii), 230.501(e)",
+      "locus": "hybrid", "owner": "issuer", "cadence": "continuous", "severity": "exemption_fatal",
+      "eval": "nonaccredited_ceiling"
+    },
+    {
+      "id": "accredited_reasonable_belief",
+      "obligation": "Issuer reasonably believes each accredited purchaser qualifies as accredited.",
+      "authority": "17 CFR 230.501(a)",
+      "locus": "private", "owner": "issuer", "cadence": "point_in_time", "severity": "exemption_fatal",
+      "eval": "manual_private"
+    },
+    {
+      "id": "info_delivery_if_nonaccredited",
+      "obligation": "If any non-accredited purchaser, deliver the Reg D information required by 230.502(b).",
+      "authority": "17 CFR 230.502(b)",
+      "locus": "private", "owner": "issuer", "cadence": "point_in_time", "severity": "exemption_fatal",
+      "eval": "info_delivery_conditional"
+    },
+    {
+      "id": "integration",
+      "obligation": "Offering is not improperly integrated with other offerings (Rule 152 safe harbor).",
+      "authority": "17 CFR 230.502(a), 230.152",
+      "locus": "hybrid", "owner": "counsel", "cadence": "point_in_time", "severity": "exemption_fatal",
+      "eval": "manual_hybrid"
+    },
+    {
+      "id": "resale_restrictions",
+      "obligation": "Securities are restricted; reasonable care taken to prevent non-exempt resale (legends, etc.).",
+      "authority": "17 CFR 230.502(d)",
+      "locus": "private", "owner": "issuer", "cadence": "continuous", "severity": "exemption_fatal",
+      "eval": "manual_private"
+    },
+    {
+      "id": "bad_actor_506d",
+      "obligation": "No covered person is subject to a Rule 506(d) disqualifying event.",
+      "authority": "17 CFR 230.506(d)",
+      "locus": "public", "owner": "counsel", "cadence": "continuous", "severity": "exemption_fatal",
+      "eval": "bad_actor_screen"
+    },
+    {
+      "id": "bad_actor_disclosure_506e",
+      "obligation": "Disclose to purchasers any pre-existing (pre-Sep 23, 2013) bad-actor events.",
+      "authority": "17 CFR 230.506(e)",
+      "locus": "private", "owner": "counsel", "cadence": "point_in_time", "severity": "exemption_fatal",
+      "eval": "manual_private"
+    },
+    {
+      "id": "form_d_filed",
+      "obligation": "Form D filed with the SEC within 15 days of the first sale.",
+      "authority": "17 CFR 230.503",
+      "locus": "hybrid", "owner": "issuer", "cadence": "point_in_time", "severity": "curable_procedural",
+      "eval": "form_d_filed"
+    },
+    {
+      "id": "form_d_amendments",
+      "obligation": "Form D amended annually and on material changes while the offering is ongoing.",
+      "authority": "17 CFR 230.503(a)",
+      "locus": "hybrid", "owner": "issuer", "cadence": "continuous", "severity": "curable_procedural",
+      "eval": "manual_continuous"
+    },
+    {
+      "id": "state_blue_sky_notice",
+      "obligation": "File state notice + fee where purchasers reside (506 = covered securities; states limited to notice).",
+      "authority": "15 U.S.C. 77r (Section 18) + applicable state law",
+      "locus": "private", "owner": "issuer", "cadence": "point_in_time", "severity": "curable_procedural",
+      "eval": "manual_private"
+    },
+    {
+      "id": "rule_507_not_disqualified",
+      "obligation": "Issuer is not subject to a Rule 507 disqualification (prior Form D injunction).",
+      "authority": "17 CFR 230.507",
+      "locus": "public", "owner": "counsel", "cadence": "point_in_time", "severity": "exemption_fatal",
+      "eval": "manual_runnable"
+    },
+    {
+      "id": "amount_reconciliation",
+      "obligation": "Form D amounts (offered / sold) reconcile with the cap table and subscription records.",
+      "authority": "reconciliation (Form D vs internal records)",
+      "locus": "hybrid", "owner": "issuer", "cadence": "point_in_time", "severity": "curable_procedural",
+      "eval": "amount_reconciliation"
+    }
+  ]
+}

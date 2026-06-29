@@ -222,6 +222,16 @@ De-risked before building. Findings:
 
 ## Revision Log
 
+- **v0.5 (2026-06-29):** Shipped the first counsel-ready CONTROL PANEL. The §506(b) control
+  framework now exists as data (`controls/reg-d-506b.json`, 14 atoms derived from 17 CFR
+  230.501-503 / 506(b)(d)(e), each with authority + the five axes). `scripts/control-panel.py`
+  loads a CIK's Form D, auto-computes state where public data allows (exemption claimed,
+  non-accredited ceiling, info-delivery N/A, bad-actor screen, amount/first-sale extraction),
+  marks the rest open/private, and renders the whole checklist with an "exemption-fatal, not
+  yet satisfied" urgent view - never-opine throughout. Shared Form D logic factored into
+  `scripts/edgar_formd.py` (screen-offering.py refactored onto it; `make test` still green).
+  Partially resolves the "control-set authoring" open question: framework-as-data, with
+  evaluators filling state - counsel still owns the template sign-off.
 - **v0.4 (2026-06-29):** Shipped the first END-TO-END flow `scripts/screen-offering.py`:
   CIK -> latest Form D -> issuer + related persons (506(d) covered persons, with roles) ->
   bad-actor drift screen, never-opine output. Verified live on a real Form D (3 covered

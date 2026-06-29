@@ -1,16 +1,10 @@
 #!/usr/bin/env python3
-"""screen-offering.py - first END-TO-END flow: Form D -> covered persons -> bad-actor monitor.
+"""screen-offering.py - focused flow: Form D -> covered persons -> bad-actor monitor.
 
-Chains two product atoms into one offering screen:
-  1. EDGAR pull: resolve a CIK's latest Form D, fetch its primary_doc.xml, extract the issuer
-     and its "related persons" (Rule 506(d) covered persons: executive officers, directors,
-     promoters, 20%+ holders, named on the Form D).
-  2. badactor-watch.py: run those names through the continuous SEC Administrative Proceedings
-     drift check.
+The lightweight view (just the 506(d) covered persons + their bad-actor drift state). For the
+full checklist, use control-panel.py. Shared Form D logic lives in edgar_formd.py.
 
-THE DISCIPLINE (unchanged): this assembles and flags. It NEVER concludes that an exemption is
-lost or that anyone is disqualified. Output is `escalate_to_counsel` / `open` with notes;
-counsel opines.
+Never-opine: covered persons + escalate_to_counsel / open + notes; counsel opines.
 
 USAGE
   export SEC_CONTACT_EMAIL="you@example.com"
@@ -20,68 +14,12 @@ USAGE
 import argparse
 import json
 import os
-import re
 import subprocess
 import sys
-import xml.etree.ElementTree as ET
+
+import edgar_formd as efd
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-
-
-def sec_fetch(url: str) -> str:
-    out = subprocess.run(["bash", os.path.join(HERE, "sec-fetch.sh"), url],
-                         capture_output=True, text=True)
-    if out.returncode != 0:
-        sys.exit(f"fetch failed ({out.returncode}) for {url}: {out.stderr.strip()}")
-    return out.stdout
-
-
-def latest_form_d(cik: str):
-    """Return (accession, primary_doc) for the most recent Form D, or exit if none."""
-    cik10 = str(int(cik)).zfill(10)
-    data = json.loads(sec_fetch(f"https://data.sec.gov/submissions/CIK{cik10}.json"))
-    issuer = data.get("name", f"CIK {cik}")
-    recent = data["filings"]["recent"]
-    for form, acc, doc in zip(recent["form"], recent["accessionNumber"], recent["primaryDocument"]):
-        if form == "D":
-            return issuer, acc, (doc or "primary_doc.xml")
-    sys.exit(f"no Form D found for CIK {cik} (issuer: {issuer})")
-
-
-def form_d_xml(cik: str, accession: str, doc: str) -> str:
-    nodash = accession.replace("-", "")
-    # submissions' primaryDocument points at the XSLT-rendered HTML (e.g. "xslFormDX08/primary_doc.xml").
-    # The raw structured XML is the same filename WITHOUT that styling-dir prefix.
-    raw = doc.split("/")[-1] or "primary_doc.xml"
-    return sec_fetch(f"https://www.sec.gov/Archives/edgar/data/{int(cik)}/{nodash}/{raw}")
-
-
-def _local(tag):  # strip XML namespace
-    return tag.split("}")[-1]
-
-
-def parse_related_persons(xml: str):
-    """Extract [{name, relationships[]}] from a Form D primary_doc.xml (namespace-agnostic)."""
-    root = ET.fromstring(xml.encode("utf-8"))
-    people = []
-    for node in root.iter():
-        if _local(node.tag) != "relatedPersonInfo":
-            continue
-        first = last = ""
-        rels = []
-        for el in node.iter():
-            ln = _local(el.tag)
-            txt = (el.text or "").strip()
-            if ln == "firstName":
-                first = txt
-            elif ln == "lastName":
-                last = txt
-            elif ln == "relationship" and txt:
-                rels.append(txt)
-        name = " ".join(p for p in (first, last) if p).strip()
-        if name:
-            people.append({"name": name, "relationships": rels})
-    return people
 
 
 def run_badactor(names):
@@ -89,36 +27,32 @@ def run_badactor(names):
         return {"feed_items": 0, "results": []}
     out = subprocess.run(
         ["python3", os.path.join(HERE, "badactor-watch.py"), "--names", "; ".join(names), "--json"],
-        capture_output=True, text=True, env={**os.environ},
-    )
+        capture_output=True, text=True, env={**os.environ})
     if out.returncode != 0:
         sys.exit(f"badactor-watch failed ({out.returncode}): {out.stderr.strip()}")
     return json.loads(out.stdout)
 
 
 def main():
-    ap = argparse.ArgumentParser(description="Screen a Reg D offering: Form D -> covered persons -> bad-actor monitor (never-opine).")
+    ap = argparse.ArgumentParser(description="Screen a Reg D offering's covered persons against the bad-actor feed (never-opine).")
     ap.add_argument("--cik", required=True, help="issuer CIK (leading zeros optional)")
     ap.add_argument("--json", action="store_true")
     args = ap.parse_args()
 
-    issuer, accession, doc = latest_form_d(args.cik)
-    people = parse_related_persons(form_d_xml(args.cik, accession, doc))
-    # Watchlist = the issuer entity + each named related person (the 506(d) covered persons).
-    watchlist = [issuer] + [p["name"] for p in people]
+    fd = efd.load_form_d(args.cik)
+    people = fd["related_persons"]
+    watchlist = [fd["issuer"]] + [p["name"] for p in people]
     screen = run_badactor(watchlist)
     by_name = {r["watch_name"]: r for r in screen["results"]}
 
     if args.json:
-        print(json.dumps({
-            "issuer": issuer, "cik": str(int(args.cik)), "form_d_accession": accession,
-            "covered_persons": people, "ap_feed_items": screen.get("feed_items"),
-            "screen": screen["results"],
-        }, indent=2))
+        print(json.dumps({"issuer": fd["issuer"], "cik": str(int(args.cik)), "form_d_accession": fd["accession"],
+                          "covered_persons": people, "ap_feed_items": screen.get("feed_items"),
+                          "screen": screen["results"]}, indent=2))
         return
 
     flags = [r for r in screen["results"] if r["state"] == "escalate_to_counsel"]
-    print(f"Offering screen | issuer: {issuer} | CIK {int(args.cik)} | Form D {accession}")
+    print(f"Offering screen | issuer: {fd['issuer']} | CIK {int(args.cik)} | Form D {fd['accession']}")
     print(f"covered persons (incl. issuer): {len(watchlist)} | flagged for counsel: {len(flags)} | conclusions drawn: 0\n")
     for name in watchlist:
         r = by_name.get(name, {"state": "open", "evidence": [], "note": ""})
