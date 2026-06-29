@@ -44,9 +44,19 @@ U.S. securities regulation rests on a **mandatory-disclosure** model: the [[U.S.
 - **EDGAR Next** (final rule Dec 27, 2024) is the biggest filer-access overhaul in 20+ years: Login.gov + multi-factor authentication, no shared credentials, and at least two account administrators per filer. Compliance was required by **Sept 15, 2025**. (Source: [[EDGAR Next]])
 - EDGAR data is programmatically accessible via `data.sec.gov` JSON APIs (submissions, company facts/concept/frames) and a full-text search covering filings since 2001, indexed in under 60 seconds - **no API key required**, but a declared User-Agent and rate limits apply. (Source: [[EDGAR APIs]])
 
+## Reg CF / Crowdfunding Funding Portals (Pass 2)
+
+- **[[Regulation Crowdfunding]]** (Title III of the JOBS Act, effective 2016) lets private companies raise up to **$5M/12 months** from the public, including non-accredited investors. (Source: [[SEC.gov - Regulation Crowdfunding]])
+- Every Reg CF raise must run through a registered **[[Funding Portal]]** or broker-dealer. A funding portal is a FINRA-member intermediary that **cannot** give advice, solicit, hold investor funds, or take transaction-based pay - a lighter-weight model than a broker-dealer. (Source: [[Funding Portal]])
+- Portals register on **Form Funding Portal via [[EDGAR]]** and join **[[Financial Industry Regulatory Authority|FINRA]]**; FINRA runs the Funding Portal Registration Depository and the Funding Portal Rules. **83 portals** were registered as of end-2024. (Source: [[FINRA - Funding Portals]])
+- Issuers file **[[Form C]]** before the raise and **Form C-AR** annually (within 120 days of FY-end) on EDGAR. (Source: [[Form C]])
+- Market is concentrated: 2025 Reg CF dollars led by **[[Wefunder]]** (~$109M, ~33%), **[[StartEngine]]** (~$89M, ~24%), DealMaker (~$66M), **[[Republic (crowdfunding)|Republic]]** (~$20M). (Source: [[Angel Investors Network - Reg CF Platform Comparison]])
+
 ## Key Entities
 
 - [[U.S. Securities and Exchange Commission]]: the federal regulator that administers securities law and operates EDGAR.
+- [[Financial Industry Regulatory Authority]]: SRO overseeing broker-dealers and funding portals under SEC supervision.
+- [[Wefunder]], [[StartEngine]], [[Republic (crowdfunding)]]: the leading Reg CF funding portals.
 
 ## Key Concepts
 
@@ -55,6 +65,9 @@ U.S. securities regulation rests on a **mandatory-disclosure** model: the [[U.S.
 - [[Federal Securities Laws]]: the statutes the SEC enforces (1933 Act through JOBS Act 2012).
 - [[SEC Filing Types]]: the standardized forms (10-K, 10-Q, 8-K, S-1, 13D/G, Forms 3/4/5, etc.).
 - [[EDGAR APIs]]: the public `data.sec.gov` JSON endpoints and full-text search.
+- [[Regulation Crowdfunding]]: the Reg CF exemption (Title III JOBS Act); $5M public raises via registered intermediaries.
+- [[Funding Portal]]: FINRA-member Reg CF intermediary; lighter-weight than a broker-dealer.
+- [[Form C]]: the Reg CF offering statement (plus C-AR annual report) filed on EDGAR.
 
 ## Contradictions
 
@@ -68,7 +81,8 @@ U.S. securities regulation rests on a **mandatory-disclosure** model: the [[U.S.
 - **XBRL & structured-data mandate:** the Financial Data Transparency Act (FDTA) and inline XBRL requirements were not yet researched.
 - **Recent rulemaking (2024–2026):** climate disclosure, cybersecurity incident disclosure (8-K Item 1.05), and share-repurchase rules are not yet covered.
 - **Regulation S-K / S-X:** the detailed disclosure-content and financial-statement rules behind the forms were not yet covered.
-- **Enforcement & exemptions:** Reg D, Reg A+, Reg CF (crowdfunding) and the SEC enforcement process remain open.
+- **Enforcement & remaining exemptions:** Reg D (506b/506c), Reg A+, Rule 144, accredited-investor definition, and the SEC enforcement process remain open. (Reg CF covered in Pass 2.)
+- **Reg CF financial-statement tiers:** exact dollar thresholds for self-certified vs reviewed vs audited financials (Rule 201(t)) still need verification.
 
 ## Sources
 
@@ -87,3 +101,4 @@ U.S. securities regulation rests on a **mandatory-disclosure** model: the [[U.S.
 ## Research Log
 
 - **Pass 1 (2026-06-29):** Broad sweep - laws, EDGAR system, filing types, EDGAR Next, APIs. 16 pages filed.
+- **Pass 2 (2026-06-29):** Reg CF crowdfunding funding portals - Regulation Crowdfunding, Funding Portal, Form C, FINRA, and the three leading portals (Wefunder/StartEngine/Republic). 14 pages filed.

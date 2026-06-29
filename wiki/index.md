@@ -23,7 +23,7 @@ related:
 
 # Wiki Index
 
-Last updated: 2026-06-29 | Total pages: 52 + 13 (Mode D scaffold) + 16 (SEC/EDGAR autoresearch) | Sources ingested: 7
+Last updated: 2026-06-29 | Total pages: 52 + 13 (Mode D scaffold) + 30 (SEC/EDGAR autoresearch, 2 passes) | Sources ingested: 8
 
 Navigation: [[overview]] | [[log]] | [[hot]] | [[dashboard]] | [[Wiki Map]] | [[getting-started]]
 
@@ -58,6 +58,9 @@ Navigation: [[overview]] | [[log]] | [[hot]] | [[dashboard]] | [[Wiki Map]] | [[
 - [[SEC Filing Types]] - the standardized forms (10-K, 10-Q, 8-K, S-1, 13D/G, Forms 3/4/5) (status: developing)
 - [[EDGAR APIs]] - public data.sec.gov JSON endpoints + full-text search; no API key required (status: developing)
 - [[Federal Securities Laws]] - the statutes the SEC administers (1933 Act through JOBS Act 2012) (status: developing)
+- [[Regulation Crowdfunding]] - Reg CF: $5M public raises via registered intermediaries; Title III JOBS Act (status: developing)
+- [[Funding Portal]] - FINRA-member Reg CF intermediary; lighter-weight than a broker-dealer (status: developing)
+- [[Form C]] - the Reg CF offering statement + C-AR annual report, filed on EDGAR (status: developing)
 
 ---
 
@@ -74,6 +77,10 @@ Navigation: [[overview]] | [[log]] | [[hot]] | [[dashboard]] | [[Wiki Map]] | [[
 - [[Claudian-YishenTu]] — native Obsidian plugin embedding Claude Code; plan mode, @mention (status: current)
 - [[Claude SEO]] — Tier 4 Claude Code skill for SEO analysis; 23 skills, 17 agents, 30 scripts at v1.9.0 (status: evergreen)
 - [[U.S. Securities and Exchange Commission]] - US federal securities regulator; operates EDGAR (status: developing)
+- [[Financial Industry Regulatory Authority]] - FINRA; SRO overseeing broker-dealers and funding portals (status: developing)
+- [[Wefunder]] - largest Reg CF funding portal (~33% of 2025 dollars) (status: developing)
+- [[StartEngine]] - second-largest Reg CF portal; full-stack (primary + secondary + funds) (status: developing)
+- [[Republic (crowdfunding)]] - accredited-leaning Reg CF platform; multi-asset private markets (status: developing)
 
 ---
 
@@ -85,6 +92,7 @@ Navigation: [[overview]] | [[log]] | [[hot]] | [[dashboard]] | [[Wiki Map]] | [[
 - [[Dive-into-Claude-Code-Build-Agent]] — 2026-06-05 | VILA-Lab arXiv 2604.14228 | 6 design decisions, alternatives, 3 meta-pattern commitments
 - [[Dive-into-Claude-Code-Related-Resources]] — 2026-06-05 | VILA-Lab arXiv 2604.14228 | community analysis, reimplementations, blog posts, academic papers
 - _SEC/EDGAR cluster (2026-06-29):_ [[SEC.gov - About EDGAR]], [[SEC.gov - Transition to EDGAR Next]], [[SEC.gov - EDGAR APIs]], [[investor.gov - Laws That Govern the Securities Industry]], [[Wikipedia - EDGAR]], [[Wikipedia - Securities Exchange Act of 1934]], [[sec-api.io - Full-Text Search API Docs]], [[edgar.tools - SEC Filing Types Explained]], [[Nuvo Group - EDGAR Next Transition]]
+- _Reg CF / funding portals cluster (2026-06-29):_ [[SEC.gov - Regulation Crowdfunding]], [[SEC.gov - Registration of Funding Portals]], [[SEC.gov - Staff Guidance on EDGAR Filing of Form C]], [[FINRA - Funding Portals]], [[MicroVentures - Funding Portals vs Broker-Dealers]], [[crowdfundingattorney.com - 2026 Reg CF Guidance]], [[Angel Investors Network - Reg CF Platform Comparison]]
 
 ---
 

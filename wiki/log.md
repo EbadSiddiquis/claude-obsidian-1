@@ -23,6 +23,13 @@ Entry format: `## [YYYY-MM-DD] operation | Title`
 
 Parse recent entries: `grep "^## \[" wiki/log.md | head -10`
 
+## [2026-06-29] autoresearch | SEC regulations and EDGAR (pass 2: Reg CF funding portals)
+- Rounds: 2 (4 search angles + 2 depth fetches)
+- Sources found: 7 (3 SEC.gov, 1 FINRA, 3 secondary/market)
+- Pages created: [[Regulation Crowdfunding]], [[Funding Portal]], [[Form C]], [[Financial Industry Regulatory Authority]], [[Wefunder]], [[StartEngine]], [[Republic (crowdfunding)]] + 7 source pages (14 total)
+- Synthesis: [[Research - SEC regulations and EDGAR]] (Pass 2 section added)
+- Key finding: Reg CF (Title III JOBS Act) allows $5M/yr public raises only through a FINRA-member funding portal or broker-dealer; portals register via Form Funding Portal on EDGAR and cannot advise, solicit, or hold funds. 83 portals registered end-2024; Wefunder leads (~33% of 2025 dollars).
+
 ## [2026-06-29] autoresearch | SEC regulations and EDGAR (pass 1)
 - Rounds: 2 (broad sweep + targeted gap fetches)
 - Sources found: 9 (4 SEC/investor.gov primary, 2 Wikipedia, 3 secondary/vendor)
