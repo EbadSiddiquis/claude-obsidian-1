@@ -23,6 +23,14 @@ Entry format: `## [YYYY-MM-DD] operation | Title`
 
 Parse recent entries: `grep "^## \[" wiki/log.md | head -10`
 
+## [2026-06-29] autoresearch | SEC regulations and EDGAR (pass 1)
+- Rounds: 2 (broad sweep + targeted gap fetches)
+- Sources found: 9 (4 SEC/investor.gov primary, 2 Wikipedia, 3 secondary/vendor)
+- Pages created: [[U.S. Securities and Exchange Commission]], [[EDGAR]], [[EDGAR Next]], [[SEC Filing Types]], [[EDGAR APIs]], [[Federal Securities Laws]] + 9 source pages + synthesis
+- Synthesis: [[Research - SEC regulations and EDGAR]]
+- Key finding: US securities regulation is a mandatory-disclosure regime (1933 Act = offerings, 1934 Act = ongoing reporting); EDGAR is the filing pipe, now mid-modernization via EDGAR Next (Login.gov + MFA, compliance required Sept 15 2025).
+- Note: running on a 2-hour loop; subsequent passes fill Open Questions (XBRL/FDTA, recent rulemaking, Reg S-K/S-X, exemptions, API rate limits).
+
 ---
 
 ## [2026-04-24] save | v1.6.0 public release notes (Teams, Karpathy-style)

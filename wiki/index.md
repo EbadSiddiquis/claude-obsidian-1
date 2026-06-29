@@ -23,7 +23,7 @@ related:
 
 # Wiki Index
 
-Last updated: 2026-06-05 | Total pages: 52 + 13 (Mode D scaffold) | Sources ingested: 6
+Last updated: 2026-06-29 | Total pages: 52 + 13 (Mode D scaffold) + 16 (SEC/EDGAR autoresearch) | Sources ingested: 7
 
 Navigation: [[overview]] | [[log]] | [[hot]] | [[dashboard]] | [[Wiki Map]] | [[getting-started]]
 
@@ -53,6 +53,11 @@ Navigation: [[overview]] | [[log]] | [[hot]] | [[dashboard]] | [[Wiki Map]] | [[
 - [[Persistent Wiki Artifact]]: durable Markdown page as the LLM's memory object, distinct from ephemeral chat turns (status: developing)
 - [[Source-First Synthesis]]: provenance discipline; raw sources stay immutable while the wiki layer is synthesized and cited (status: developing)
 - [[Query-Time Retrieval]]: wiki query path synthesizes with citations; complementary to Obsidian's in-vault search (status: developing)
+- [[EDGAR]] - the SEC's electronic system for collecting and publishing mandatory corporate filings (status: developing)
+- [[EDGAR Next]] - 2024-25 modernization of EDGAR filer access: Login.gov + MFA, role-based admins (status: developing)
+- [[SEC Filing Types]] - the standardized forms (10-K, 10-Q, 8-K, S-1, 13D/G, Forms 3/4/5) (status: developing)
+- [[EDGAR APIs]] - public data.sec.gov JSON endpoints + full-text search; no API key required (status: developing)
+- [[Federal Securities Laws]] - the statutes the SEC administers (1933 Act through JOBS Act 2012) (status: developing)
 
 ---
 
@@ -68,6 +73,7 @@ Navigation: [[overview]] | [[log]] | [[hot]] | [[dashboard]] | [[Wiki Map]] | [[
 - [[kepano-obsidian-skills]] — official skills from Obsidian creator; defuddle, obsidian-bases (status: current)
 - [[Claudian-YishenTu]] — native Obsidian plugin embedding Claude Code; plan mode, @mention (status: current)
 - [[Claude SEO]] — Tier 4 Claude Code skill for SEO analysis; 23 skills, 17 agents, 30 scripts at v1.9.0 (status: evergreen)
+- [[U.S. Securities and Exchange Commission]] - US federal securities regulator; operates EDGAR (status: developing)
 
 ---
 
@@ -78,12 +84,14 @@ Navigation: [[overview]] | [[log]] | [[hot]] | [[dashboard]] | [[Wiki Map]] | [[
 - [[Dive-into-Claude-Code-Architecture]] — 2026-06-05 | VILA-Lab arXiv 2604.14228 | 7-component system, 5-layer subsystems, extensibility, subagents, session persistence
 - [[Dive-into-Claude-Code-Build-Agent]] — 2026-06-05 | VILA-Lab arXiv 2604.14228 | 6 design decisions, alternatives, 3 meta-pattern commitments
 - [[Dive-into-Claude-Code-Related-Resources]] — 2026-06-05 | VILA-Lab arXiv 2604.14228 | community analysis, reimplementations, blog posts, academic papers
+- _SEC/EDGAR cluster (2026-06-29):_ [[SEC.gov - About EDGAR]], [[SEC.gov - Transition to EDGAR Next]], [[SEC.gov - EDGAR APIs]], [[investor.gov - Laws That Govern the Securities Industry]], [[Wikipedia - EDGAR]], [[Wikipedia - Securities Exchange Act of 1934]], [[sec-api.io - Full-Text Search API Docs]], [[edgar.tools - SEC Filing Types Explained]], [[Nuvo Group - EDGAR Next Transition]]
 
 ---
 
 ## Questions
 
 - [[How does the LLM Wiki pattern work]] — how the pattern works and why it outperforms RAG at human scale (status: developing)
+- [[Research - SEC regulations and EDGAR]] - autoresearch synthesis: laws, EDGAR, filing types, EDGAR Next, APIs (status: developing)
 
 ---
 
