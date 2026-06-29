@@ -23,6 +23,14 @@ Entry format: `## [YYYY-MM-DD] operation | Title`
 
 Parse recent entries: `grep "^## \[" wiki/log.md | head -10`
 
+## [2026-06-29] autoresearch | SEC regulations and EDGAR (pass 7: structure & enforcement + lint)
+- Rounds: 1 (3 search angles)
+- Sources found: 3 (SEC.gov org chart, Winston & Strawn, Wikipedia)
+- Pages created: [[SEC Divisions and Structure]], [[SEC Enforcement Process]], [[SEC Whistleblower Program]] + 3 source pages (6 total)
+- Lint: full-vault (146 pages); 0 dead links / 0 orphans across 32 loop pages
+- Synthesis: [[Research - SEC regulations and EDGAR]] (Pass 7 section added)
+- Key finding: SEC = 5 divisions (Corp Fin, Enforcement, Trading & Markets, IM, DERA). Enforcement runs investigation -> Wells notice -> submission -> charge (administrative proceeding or federal court) or close; most settle. Dodd-Frank whistleblower program pays 10-30% of sanctions over $1M from the Investor Protection Fund with anti-retaliation protection.
+
 ## [2026-06-29] autoresearch | SEC regulations and EDGAR (pass 6: disclosure rulebooks S-K / S-X)
 - Rounds: 1 (3 search angles)
 - Sources found: 3 (Cornell LII x2, CFO Bridge)

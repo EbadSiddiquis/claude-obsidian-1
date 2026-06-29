@@ -90,6 +90,12 @@ The Securities Act requires registration unless an exemption applies ([[Exempt O
 - [[Financial Industry Regulatory Authority]]: SRO overseeing broker-dealers and funding portals under SEC supervision.
 - [[Wefunder]], [[StartEngine]], [[Republic (crowdfunding)]]: the leading Reg CF funding portals.
 
+## How the SEC Is Built & Enforces (Pass 7)
+
+- The SEC has **five divisions**: Corporation Finance (disclosure review), Enforcement, Trading & Markets, Investment Management, and **DERA** (economics/risk, est. 2009). ([[SEC Divisions and Structure]])
+- **[[SEC Enforcement Process]]:** investigation -> **Wells notice** -> Wells submission -> charge or close; actions run as **SEC administrative proceedings** or **federal-court civil suits**; most settle (recent reforms separate settlement from the Wells submission).
+- **[[SEC Whistleblower Program]]** (Dodd-Frank 2010): pays **10-30%** of sanctions when collections exceed **$1M**, from the Investor Protection Fund, with anti-retaliation protection.
+
 ## Key Concepts
 
 - [[EDGAR]]: the SEC's electronic filing and dissemination system.
@@ -109,6 +115,7 @@ The Securities Act requires registration unless an exemption applies ([[Exempt O
 - [[Exempt Offerings]]: the menu of registration exemptions (Reg D / Reg A / Reg CF / 4(a)(2)).
 - [[Regulation D]], [[Regulation A]], [[Accredited Investor]], [[Rule 144]]: the private-capital and resale exemptions.
 - [[Regulation S-K]], [[Regulation S-X]], [[Integrated Disclosure System]]: the narrative and financial-statement disclosure rulebooks.
+- [[SEC Divisions and Structure]], [[SEC Enforcement Process]], [[SEC Whistleblower Program]]: how the agency is organized and enforces the law.
 
 ## Contradictions
 
@@ -123,7 +130,8 @@ The Securities Act requires registration unless an exemption applies ([[Exempt O
 - **Recent rulemaking (2023-2026):** covered in Pass 4 (cyber, climate, buybacks, T+1). Remaining: precise 2026 climate-rescission final text; any new 2026 disclosure proposals.
 - **Regulation S-K / S-X:** covered in Pass 6. Remaining: specific S-K item numbers beyond 303/106; S-X article-by-article detail.
 - **Exemptions:** covered in Pass 5 (Reg D, Reg A, Rule 144, accredited investor) and Pass 2 (Reg CF). Remaining: Section 4(a)(2) case law; intrastate (Rule 147/147A); pending accredited-investor expansion legislation.
-- **SEC enforcement & structure:** divisions, the Wells process, whistleblower program, administrative vs federal-court proceedings still open.
+- **SEC enforcement & structure:** covered in Pass 7 (divisions, Wells process, whistleblower). Remaining: examinations (Division of Examinations), the gag-rule/Rule 102(e) detail.
+- **Practical EDGAR data access:** CIK/ticker mapping, accession-number format, bulk datasets (financial statement datasets, full-index) still open.
 - **Reg CF financial-statement tiers:** exact dollar thresholds for self-certified vs reviewed vs audited financials (Rule 201(t)) still need verification.
 
 ## Sources
@@ -148,3 +156,4 @@ The Securities Act requires registration unless an exemption applies ([[Exempt O
 - **Pass 4 (2026-06-29):** Recent rulemaking 2023-2026 - cybersecurity (8-K Item 1.05), climate disclosure, buyback vacatur, T+1, plus a litigation roundup. 9 pages filed. Wiki-lint run (full vault): 0 orphans, fixed 3 self-introduced dead links, flagged pre-existing ones for human review.
 - **Pass 5 (2026-06-29):** Private-offering exemptions - Exempt Offerings umbrella, Regulation D (506b/506c), Regulation A (Tier 1/2), Accredited Investor, Rule 144. 11 pages filed.
 - **Pass 6 (2026-06-29):** Disclosure rulebooks - Regulation S-K, Regulation S-X, Integrated Disclosure System. 6 pages filed.
+- **Pass 7 (2026-06-29):** SEC structure & enforcement - Divisions/DERA, Enforcement Process (Wells), Whistleblower Program. 6 pages filed. Wiki-lint (full vault, 146 pages): 0 dead links / 0 orphans across 32 loop pages.
