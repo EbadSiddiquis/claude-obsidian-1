@@ -113,8 +113,11 @@ the better wedge.
   A fresh opinion closes controls to `satisfied_by_counsel` (attributed to a named attorney/date);
   it decays on law-drift (cited authority pinned_version moved) or fact-drift (relied-on filing
   superseded), reverting to escalate.
+- **Federal Register drift source:** implemented (v0.11) - `scripts/fedreg-watch.py` maps new SEC
+  FR documents to authority nodes by CFR part (AFFECTS-NODES / OTHER-SEC-RULE / UNMAPPED-REVIEW),
+  catching binding-but-uncodified actions (orders) that the eCFR diff misses.
 - **Not yet built:** the system-assumption meta-node as data; FINRA/state/MTL automated drift
-  sources; the Federal Register (releases/orders) automated drift source.
+  sources.
 
 ## Revision Log
 - **v0.2 (2026-06-29):** Marked sovereign axis + provenance/drift as implemented; noted remaining gaps.

@@ -222,6 +222,14 @@ De-risked before building. Findings:
 
 ## Revision Log
 
+- **v0.11 (2026-06-29):** Wired the **Federal Register drift source** (`scripts/fedreg-watch.py`),
+  closing the "binding != codified" gap that a pure eCFR diff misses. Queries the FR API for SEC
+  documents since a date and maps them to authority nodes by CFR part: touches a part we cite ->
+  AFFECTS-NODES (lists dependent controls for review); touches title 17 but not our parts ->
+  OTHER-SEC-RULE (context); no CFR reference (e.g., an ORDER) -> UNMAPPED-REVIEW (the
+  binding-but-uncodified catch - the April-2026-order class). Verified live (3 part-230 SEC rules
+  flagged since our pin; 98 uncodified SEC notices surfaced for review). No-silent-caps: prints a
+  truncation note past the page limit. Never concludes - "review; counsel assesses." `make test` green.
 - **v0.10 (2026-06-29):** Built the **named-counsel terminal node** (the authority the thesis
   hinges on). `scripts/counsel.py` + an opinions-of-record file (`opinions/*.json`): a fresh
   opinion *closes* covered controls into `satisfied_by_counsel`, **attributed to a named
