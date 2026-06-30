@@ -222,6 +222,18 @@ De-risked before building. Findings:
 
 ## Revision Log
 
+- **v0.19 (2026-06-30):** Refined the **state-notice** leg (`cf_state_notice`) by surfacing the
+  Section 18(b)(4)(C) **covered-securities preemption** as a public legal fact: Reg CF securities
+  preempt state registration/qualification, so the state surface collapses to residual notice filings
+  + preserved antifraud. It lists the offering's jurisdictions from the Form C and routes the residual
+  to counsel, while stating the *statute* — explicitly not a conclusion about this offering's state
+  compliance (the never-opine line: cite the law, don't apply it). This is an instance of a distinct
+  automation lever the prior steps didn't use: not a public *register* lookup but a public *legal
+  framework* that shrinks the surface a priori. With it, **every funding-portal control except
+  `portal_revenue_report` now draws on public data** - and that one is honestly un-automatable (a
+  FINRA-internal Form FP-Statement of Revenue, not on EDGAR), which is itself the right answer: the
+  system maps the surface to public-vs-private and stops exactly where the public record does.
+  `make test` green (13 suites).
 - **v0.18 (2026-06-30):** Cross-checked the **single-intermediary** rule (`cf_single_intermediary`,
   227.300(b)) against the issuer's own public Form C record — from blind to a deterministic EDGAR
   test. It scans the issuer's Form C / C-A filings for the named intermediary and reuses the

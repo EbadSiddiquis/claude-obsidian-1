@@ -230,6 +230,29 @@ def test_portal_conduct_never_opine():
         assert_true("portal_conduct never-opine", _eval_ctx("portal_conduct", ctx)[0] in NEVER_OPINE_STATES)
 
 
+# ─── cf_state_notice (Section 18 preemption + offering jurisdictions) ────────
+def test_cf_state_notice_states_preemption_and_lists_jurisdictions():
+    state, ev, note = _eval("cf_state_notice", {"state_jurisdictions": ["CA", "TX", "NY"]})
+    assert_eq("preemption is a public fact → open", "open", state)
+    assert_true("cites the covered-securities preemption", any("covered securities" in e for e in ev))
+    assert_true("lists the offering jurisdictions", any("3 jurisdiction" in e for e in ev))
+    # Never-opine: it states the LAW, not a conclusion about this offering's state compliance.
+    assert_true("explicitly not a conclusion about this offering", "not a conclusion about this offering" in ev[0])
+    assert_true("residual notice filing routed to counsel/private", "private" in note and "NOTICE" in note)
+
+
+def test_cf_state_notice_handles_no_jurisdictions():
+    state, ev, _note = _eval("cf_state_notice", {})
+    assert_eq("no jurisdictions → still open", "open", state)
+    assert_true("still states the preemption", any("covered securities" in e for e in ev))
+    assert_true("notes jurisdictions not enumerated", any("does not enumerate" in e for e in ev))
+
+
+def test_cf_state_notice_never_opine():
+    for fd in ({"state_jurisdictions": ["CA"]}, {}):
+        assert_true("cf_state_notice never-opine", _eval("cf_state_notice", fd)[0] in NEVER_OPINE_STATES)
+
+
 # ─── cf_single_intermediary (227.300(b)) + the concurrency cross-check ───────
 def _ix_ctx(rows, truncated=False):
     return {"form_c_intermediaries": {"rows": rows, "truncated": truncated}}
@@ -377,6 +400,9 @@ def test_list_form_c_intermediaries_skips_failed_fetch_not_crash():
 
 
 def main():
+    test_cf_state_notice_states_preemption_and_lists_jurisdictions()
+    test_cf_state_notice_handles_no_jurisdictions()
+    test_cf_state_notice_never_opine()
     test_concurrent_overlap_detection()
     test_cf_single_intermediary_one_is_open()
     test_cf_single_intermediary_concurrent_escalates()

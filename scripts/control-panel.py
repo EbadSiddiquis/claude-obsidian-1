@@ -290,6 +290,24 @@ def evaluate(control, fd, ctx):
                             "arrangement - could not fetch it. Confirm a qualified third party (BD/bank/escrow) holds "
                             "investor funds, not the portal, plus AML/BSA controls (private).")
 
+    if key == "cf_state_notice":
+        # Public legal fact (not a conclusion about this deal): Reg CF securities are "covered
+        # securities" under 15 U.S.C. 77r(b)(4)(C), so state REGISTRATION / qualification is preempted.
+        # We surface that + the offering's states (from Form C) and route the residual, state-specific
+        # NOTICE-filing compliance (private, not on EDGAR) + preserved state antifraud to counsel.
+        states = fd.get("state_jurisdictions") or []
+        ev = ["Reg CF securities are 'covered securities' under 15 U.S.C. 77r(b)(4)(C) (Section 4(a)(6)) - "
+              "state registration / qualification is preempted (statutory; not a conclusion about this offering)"]
+        if states:
+            shown = ", ".join(states[:12]) + (f" (+{len(states) - 12} more)" if len(states) > 12 else "")
+            ev.append(f"Form C lists the offering in {len(states)} jurisdiction(s): {shown}")
+        else:
+            ev.append("Form C does not enumerate offering jurisdictions; confirm where the offering was made")
+        return "open", ev, ("Registration is preempted by Section 18, so the state surface reduces to: any residual "
+                            "NOTICE filing + fee a state may still require for Reg CF (limited and state-specific - not on "
+                            "EDGAR) and the states' preserved ANTIFRAUD authority. Confirm the required state notices were "
+                            "filed where the offering was conducted (private). Counsel confirms.")
+
     if key == "cf_single_intermediary":
         # Cross-check the issuer's own Form C record: does every Form C / C-A name ONE intermediary?
         # Distinct intermediaries across SEQUENTIAL offerings are permitted; distinct intermediaries
