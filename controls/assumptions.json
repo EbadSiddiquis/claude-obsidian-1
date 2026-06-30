@@ -74,6 +74,15 @@
       "affects_controls": ["portal_finra_member"]
     },
     {
+      "id": "asm-cfportal-escrow-fields",
+      "kind": "verifiable",
+      "statement": "Form Funding Portal (CFPORTAL) discloses fund custody in structured fields: escrowArrangements wrapping investorFundsContacts/investorFundsContactName (+ address). A registered broker-dealer files X-17A-5 on EDGAR (qualified third party per 227.303(e)(1)).",
+      "used_by": "fund-custody-check.parse_cfportal / verify_custodian_is_bd",
+      "risk_if_wrong": "The money-transmission leg (funds_qualified_third_party) mis-reads the custodian or the BD status -> control state silently wrong.",
+      "check": "cfportal_escrow_fields",
+      "affects_controls": ["funds_qualified_third_party"]
+    },
+    {
       "id": "asm-fileno-normalize",
       "kind": "accepted",
       "statement": "SEC funding-portal file numbers normalize to FINRA's display form by stripping leading-zero padding per hyphen part (007-00042 -> 7-42); this is the join key between the two registers.",

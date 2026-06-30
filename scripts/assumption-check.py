@@ -35,6 +35,10 @@ _fp_spec = importlib.util.spec_from_file_location("finra_portal_check", os.path.
 finra_portal = importlib.util.module_from_spec(_fp_spec)
 _fp_spec.loader.exec_module(finra_portal)
 
+_fc_spec = importlib.util.spec_from_file_location("fund_custody_check", os.path.join(HERE, "fund-custody-check.py"))
+fund_custody = importlib.util.module_from_spec(_fc_spec)
+_fc_spec.loader.exec_module(fund_custody)
+
 
 def _curl(url):
     out = subprocess.run(["curl", "-sSL", "-A", UA, url], capture_output=True, text=True)
@@ -142,6 +146,19 @@ def _finra_fp_shape(ctx):
     entry = finra_portal.parse_finra_entry(html, "007-00042")  # Ksdaq/Mr. Crowd, file 7-42
     ok = bool(entry.get("found")) and bool(entry.get("legal_name"))
     return ok, f"div.multicolumn-container entries parseable; file 7-42 -> {entry.get('legal_name')!r}"
+
+
+@check("cfportal_escrow_fields")
+def _cfportal_escrow_fields(ctx):
+    try:
+        cust = fund_custody.load_portal_custody(REF_PORTAL_CIK)
+    except SystemExit as e:
+        return None, f"fetch failed: {e}"
+    if not cust.get("has_cfportal"):
+        return False, f"reference portal CIK {REF_PORTAL_CIK} has no CFPORTAL on file"
+    bd = fund_custody.verify_custodian_is_bd(cust.get("custodian_name"))
+    ok = bool(cust.get("custodian_name")) and bool(bd.get("is_registered_bd"))
+    return ok, f"custodian={cust.get('custodian_name')!r}; registered-BD={bd.get('is_registered_bd')}"
 
 
 def main():

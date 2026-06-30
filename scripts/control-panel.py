@@ -67,6 +67,28 @@ def run_portal_check(fd):
         return None
 
 
+def run_fund_custody(fd):
+    """Verify the money-transmission / fund-custody leg from the portal's Form Funding Portal
+    (EDGAR CFPORTAL). Returns {state, evidence, note, ...} or None on failure (the evaluator
+    then degrades to the manual surface)."""
+    cik = fd.get("intermediary_cik")
+    if not cik:
+        return None
+    try:
+        cik_arg = str(int(cik))
+    except (TypeError, ValueError):
+        cik_arg = str(cik)
+    out = subprocess.run(
+        ["python3", os.path.join(HERE, "fund-custody-check.py"), "--portal-cik", cik_arg, "--json"],
+        capture_output=True, text=True, env={**os.environ})
+    if out.returncode != 0:
+        return None
+    try:
+        return json.loads(out.stdout)
+    except json.JSONDecodeError:
+        return None
+
+
 def evaluate(control, fd, ctx):
     """Return (state, evidence, note) for one control given parsed Form D `fd` and shared ctx."""
     key = control["eval"]
@@ -205,6 +227,19 @@ def evaluate(control, fd, ctx):
             return "open", ev, note
         return "open", ev, "Intermediary identity not fully determinable from Form C; confirm a registered portal/BD."
 
+    if key == "mtl_fund_custody":
+        # Money-transmission leg: read the portal's Form Funding Portal (EDGAR CFPORTAL) for the
+        # disclosed investor-funds custodian, confirm it is a qualified third party (registered BD)
+        # distinct from the portal. Pre-computed in build() via ctx. Escalate if the portal appears
+        # to handle funds itself; open (evidenced) when the 227.303(e) structure checks out; the
+        # executed escrow agreement + AML/BSA controls remain private, so never satisfied here.
+        fc = ctx.get("fund_custody")
+        if fc:
+            return fc["state"], fc["evidence"], fc["note"]
+        return "open", [], ("Needs the portal's Form Funding Portal (CFPORTAL) to read the disclosed fund-custody "
+                            "arrangement - could not fetch it. Confirm a qualified third party (BD/bank/escrow) holds "
+                            "investor funds, not the portal, plus AML/BSA controls (private).")
+
     if key == "manual_runnable":
         return "open", [], "Runnable against court-order / enforcement data; not yet wired."
     if key == "manual_continuous":
@@ -244,9 +279,11 @@ def build(cik, framework_path=CONTROLS, opinions_path=None):
     fd = loader(cik)
     watchlist = [fd["issuer"]] + [p["name"] for p in fd.get("related_persons", [])]
     ctx = {"watchlist": watchlist, "badactor": run_badactor(watchlist)}
-    # Form C surfaces an intermediary -> verify it against the SEC + FINRA registers (once).
+    # Form C surfaces an intermediary -> verify it against the SEC + FINRA registers (once),
+    # and read the portal's Form Funding Portal for the disclosed fund-custody arrangement.
     if fd.get("intermediary_cik") or fd.get("intermediary_file_number"):
         ctx["portal"] = run_portal_check(fd)
+        ctx["fund_custody"] = run_fund_custody(fd)
     registry = areg.load_registry()
     assumptions = asm_reg.load_assumptions()
     rows = []

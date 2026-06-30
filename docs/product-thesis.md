@@ -222,6 +222,27 @@ De-risked before building. Findings:
 
 ## Revision Log
 
+- **v0.16 (2026-06-30):** Evidenced the **money-transmission leg** — `funds_qualified_third_party`
+  goes from blind `manual_private` to a public-data verification (`scripts/fund-custody-check.py`).
+  The insight: the money-transmission risk of a Reg CF raise is *structural* — 227.303(e) routes
+  investor funds to a "qualified third party" (a registered broker-dealer or bank, both carved out
+  of state MTL / FinCEN MSB), and the portal may not touch funds (227.300(c)(2)). And the whole
+  structure is **publicly disclosed**: the portal's own Form Funding Portal (EDGAR `CFPORTAL`) names
+  the investor-funds custodian in structured fields, and the custodian's broker-dealer status is
+  itself public (annual `X-17A-5` FOCUS reports on EDGAR). So the check reads the custodian, confirms
+  it is a third party distinct from the portal (portal-holds-funds → escalate), and confirms it is a
+  registered BD — resolving to `open` (heavily evidenced) when the structure holds, `escalate` when
+  the portal appears to handle funds, never `satisfied` (the executed escrow agreement + AML/BSA stay
+  private). Verified live: Mr. Crowd → **North Capital Private Securities Corporation** (a registered
+  BD), distinct from the portal. This is the **first money-transmission-sovereign control to reach an
+  evidenced state**, completing the public-side automation of all three non-issuer CF sovereigns
+  (federal-SEC, FINRA, money-transmission). It reinforces the core thesis claim from a third angle:
+  the automatable surface is bounded by *public-vs-private locus*, not by authority — and Reg CF's
+  fund-custody structure, like its registration legs, is almost entirely public, so it automates to
+  an evidenced state where a private operational duty could not. Diagnose-before-detour again: the
+  leg *looked* fully private ("AML controls, escrow agreement") but the load-bearing fact (who holds
+  the money, and are they qualified) is sitting in two EDGAR filings. Captured in `CLAUDE.md`;
+  registered `asm-cfportal-escrow-fields` (live-checked); hermetic tests added. `make test` green (13).
 - **v0.15 (2026-06-30):** Auto-verified **FINRA membership** — `portal_finra_member` goes from
   "runnable; not yet wired" to a live, deterministic two-register check (`scripts/finra-portal-check.py`).
   It joins the SEC register (EDGAR `CFPORTAL` form family — registered iff a CFPORTAL exists and the

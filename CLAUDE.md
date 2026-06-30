@@ -170,6 +170,28 @@ verdict (`satisfied` only when both registers confirm + names reconcile; `escala
 withdrawal / register inconsistency / name mismatch; `open` if a register is unreachable).
 (Established 2026-06-30 wiring the funding-portal control `portal_finra_member` to live data.)
 
+## Money-Transmission / Fund-Custody Verification (the portal's own filing discloses it)
+
+The fund-custody / money-transmission leg of a Reg CF raise (17 CFR 227.303(e)) *looks* fully
+private ("escrow agreement, AML controls") but the load-bearing facts are public in **two EDGAR
+filings**, chained:
+
+1. **Who holds investor funds** — the portal's **Form Funding Portal (`CFPORTAL`)** `primary_doc.xml`
+   discloses it in structured fields: `escrowArrangements` → `investorFundsContacts` →
+   `investorFundsContactName` (+ address). A compliant portal names a third party here, distinct
+   from itself (the portal may not handle funds, 227.300(c)(2)). Namespace `http://www.sec.gov/edgar/crowdfunding`;
+   parse namespace-agnostically (reuse `edgar_formd._find` / `_first_text`).
+2. **Is that custodian a "qualified third party"** (registered BD or bank, both MTL/MSB-exempt) —
+   a **registered broker-dealer files annual `X-17A-5` FOCUS reports on EDGAR** (SEA Rule 17a-5).
+   Resolve the custodian name → CIK via the EDGAR atom company search
+   (`browse-edgar?action=getcompany&company=<name>&type=X-17A-5&output=atom`), then confirm `X-17A-5`
+   in that CIK's submissions. A *bank* custodian won't file X-17A-5 → "confirm manually", not a failure.
+
+Wrapper: `python3 scripts/fund-custody-check.py --portal-cik <cik>` → never-opine (`escalate` if the
+portal names itself / no custodian; `open` evidenced when a qualified-BD third party checks out — the
+executed escrow agreement + AML/BSA stay private, so never `satisfied`). Live proof: Mr. Crowd → North
+Capital Private Securities Corporation (CIK 1496269, X-17A-5 filer). (Established 2026-06-30.)
+
 ## MCP (Optional)
 
 If you configured the MCP server, Claude can read and write vault notes directly.

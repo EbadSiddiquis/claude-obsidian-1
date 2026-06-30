@@ -4,7 +4,7 @@ Companion to [product-thesis.md](product-thesis.md). Pressure-tests the source-o
 The premise: every load-bearing claim traces to an authoritative source or a named human
 authority. This doc designs the *model*, not a source list.
 
-> Status: v0.4 (2026-06-30). Captured from an architecture pressure-test. Refine per the
+> Status: v0.5 (2026-06-30). Captured from an architecture pressure-test. Refine per the
 > thesis Self-Refinement Protocol.
 
 ## The core correction
@@ -136,11 +136,24 @@ the better wedge.
   directly fetchable HTML). `satisfied` only when both confirm with reconciling names (a pure
   public-register fact); `escalate` on withdrawal / inconsistency / name mismatch; `open` if
   unreachable. Registered as system-assumption nodes (`asm-cfportal-forms`, `asm-finra-fp-html`).
+- **Money-transmission leg evidenced (first verified money-transmission-sovereign control):**
+  implemented (v0.16) - `scripts/fund-custody-check.py` evidences `funds_qualified_third_party`
+  from public EDGAR data: the portal's Form Funding Portal (`CFPORTAL`) discloses the investor-funds
+  custodian (structured `escrowArrangements/investorFundsContacts`), the check confirms it is a third
+  party distinct from the portal (portal-holds-funds → escalate), and confirms it is a registered
+  broker-dealer via `X-17A-5` FOCUS filings (a qualified third party under 227.303(e)(1), MTL/MSB-
+  exempt). `open` when the structure holds (executed agreement + AML stay private), `escalate` on
+  portal-holds-funds. Registered as `asm-cfportal-escrow-fields`.
 - **Not yet built (automated drift sources only):** FINRA *rulebook/notices* (the FP Rule text
-  itself), state blue-sky, and money-transmission remain `manual` version_source (no automated
-  drift checker) - distinct from the membership *register* check above, which is now live.
+  itself), state blue-sky, and money-transmission *rule-text* drift remain `manual` version_source
+  (no automated drift checker) - distinct from the membership *register* and fund-custody *disclosure*
+  checks above, which are now live.
 
 ## Revision Log
+- **v0.5 (2026-06-30):** Money-transmission leg evidenced — `funds_qualified_third_party` is the
+  first money-transmission-sovereign control to reach an evidenced state, from the portal's Form
+  Funding Portal escrow disclosure + the custodian's broker-dealer (X-17A-5) registration. All three
+  non-issuer CF sovereigns (federal-SEC, FINRA, money-transmission) now have public-side automation.
 - **v0.4 (2026-06-30):** FINRA membership auto-verified — `portal_finra_member` is the first
   FINRA-sovereign control to reach a verified state, from the SEC (EDGAR CFPORTAL) + FINRA
   registers joined on the SEC file number.
