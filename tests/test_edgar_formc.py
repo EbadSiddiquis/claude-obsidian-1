@@ -98,6 +98,17 @@ def _eval(eval_key, fd):
     return cp.evaluate(control, fd, {})
 
 
+def _eval_ctx(eval_key, ctx, fd=None):
+    return cp.evaluate({"eval": eval_key}, fd or {}, ctx)
+
+
+def _fc(state="open", has_cfportal=True, custodian="North Capital Private Securities Corporation",
+        comp="a percentage of gross proceeds; may take an equity position in an issuer", affirmative=None):
+    return {"fund_custody": {"state": state, "custody": {
+        "has_cfportal": has_cfportal, "custodian_name": custodian,
+        "compensation_desc": comp, "affirmative_disclosures": affirmative or []}}}
+
+
 # ─── parse_form_c ────────────────────────────────────────────────────────────
 def test_parse_form_c_fields():
     fd = efd.parse_form_c(FORM_C_XML)
@@ -171,7 +182,47 @@ def test_cf_evaluators_never_opine():
                     f"got {state!r}")
 
 
+# ─── portal_conduct (FINRA prohibited-conduct / FP Rule 200) ─────────────────
+def test_portal_conduct_clean_open_and_does_not_flag_comp():
+    state, ev, note = _eval_ctx("portal_conduct", _fc())
+    assert_eq("clean portal → open", "open", state)
+    assert_true("funds-handling prong cross-referenced", any("funds-handling prong" in e for e in ev))
+    assert_true("compensation surfaced as evidence", any("compensation" in e.lower() for e in ev))
+    # The discipline test: permitted transaction-based / equity comp must be SURFACED, never flagged.
+    assert_true("does not opine on compensation permissibility",
+                "legal judgment for counsel" in note and "NOT the system" in note)
+
+
+def test_portal_conduct_affirmative_disclosure_escalates():
+    state, ev, note = _eval_ctx("portal_conduct", _fc(affirmative=["isOrderAgainst"]))
+    assert_eq("portal self-disclosed a regulatory event → escalate", "escalate_to_counsel", state)
+    assert_true("note cites FP Rule 200", "FP Rule 200" in note)
+
+
+def test_portal_conduct_funds_flagged_escalates():
+    state, _ev, _note = _eval_ctx("portal_conduct", _fc(state="escalate_to_counsel", custodian="Ksdaq Inc."))
+    assert_eq("funds-handling prong flagged → escalate", "escalate_to_counsel", state)
+
+
+def test_portal_conduct_no_cfportal_open():
+    state, _ev, _note = _eval_ctx("portal_conduct", {"fund_custody": {"state": "open", "custody": {"has_cfportal": False}}})
+    assert_eq("no CFPORTAL → open (unevidenced)", "open", state)
+    # also tolerate a totally absent fund_custody ctx
+    assert_eq("missing fund_custody ctx → open", "open", _eval_ctx("portal_conduct", {})[0])
+
+
+def test_portal_conduct_never_opine():
+    for ctx in (_fc(), _fc(affirmative=["isEnjoined"]), _fc(state="escalate_to_counsel"),
+                {"fund_custody": {"state": "open", "custody": {"has_cfportal": False}}}):
+        assert_true("portal_conduct never-opine", _eval_ctx("portal_conduct", ctx)[0] in NEVER_OPINE_STATES)
+
+
 def main():
+    test_portal_conduct_clean_open_and_does_not_flag_comp()
+    test_portal_conduct_affirmative_disclosure_escalates()
+    test_portal_conduct_funds_flagged_escalates()
+    test_portal_conduct_no_cfportal_open()
+    test_portal_conduct_never_opine()
     test_parse_form_c_fields()
     test_cf_cap_within_ceiling_is_open()
     test_cf_cap_over_ceiling_escalates()

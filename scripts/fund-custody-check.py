@@ -53,8 +53,33 @@ def _latest_cfportal(subs: dict):
     return None
 
 
+# The four negative-event disclosure subtrees in a Form Funding Portal. We scan ONLY these (so the
+# neutral structural booleans elsewhere - isSucceedingBusiness, isEngagedInNonSecurities - are never
+# mistaken for an event). isAuthorizedToActAttorney sits inside regulatoryActionDisclosure but is a
+# non-negative-event question, so it is explicitly excluded.
+_DISCLOSURE_SUBTREES = {"criminalDisclosure", "regulatoryActionDisclosure",
+                        "civilJudicialActionDisclosure", "financialDisclosure"}
+_NEUTRAL_DISCLOSURE_FIELDS = {"isAuthorizedToActAttorney"}
+_AFFIRMATIVE = {"Y", "YES", "TRUE"}
+
+
+def _scan_disclosures(root) -> list:
+    """Affirmative (Y/true) answers within the criminal/regulatory/civil/financial disclosure
+    subtrees - the portal's self-disclosed events (FINRA FP Rule 200 standing). Empty == clean."""
+    out = []
+    for el in root.iter():
+        if efd._ln(el.tag) not in _DISCLOSURE_SUBTREES:
+            continue
+        for sub in el.iter():
+            n = efd._ln(sub.tag)
+            if n.startswith(("is", "has", "does")) and n not in _NEUTRAL_DISCLOSURE_FIELDS \
+                    and (sub.text or "").strip().upper() in _AFFIRMATIVE and n not in out:
+                out.append(n)
+    return out
+
+
 def parse_cfportal(xml: str) -> dict:
-    """Extract the fund-custody disclosures from a Form Funding Portal (namespace-agnostic)."""
+    """Extract the fund-custody + conduct disclosures from a Form Funding Portal (namespace-agnostic)."""
     root = ET.fromstring(xml.encode("utf-8"))
     # Single-custodian assumption: we read the FIRST investorFundsContacts block. A portal disclosing
     # multiple investor-funds custodians (rare) would have the rest dropped; the named one is still a
@@ -71,6 +96,7 @@ def parse_cfportal(xml: str) -> dict:
         "custodian_name": custodian,
         "custodian_location": loc,
         "compensation_desc": efd._first_text(root, "compensationDesc"),
+        "affirmative_disclosures": _scan_disclosures(root),
     }
 
 

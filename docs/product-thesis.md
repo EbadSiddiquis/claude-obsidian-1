@@ -222,6 +222,22 @@ De-risked before building. Findings:
 
 ## Revision Log
 
+- **v0.17 (2026-06-30):** Evidenced **portal prohibited-conduct** (`portal_prohibited_conduct`) — and
+  in doing so passed a real never-opine discipline test. The `portal_conduct` evaluator reuses the
+  portal's Form Funding Portal (already fetched for fund-custody) to assemble public evidence: the
+  funds-handling prong is cross-referenced to the money-transmission leg, and the portal's structured
+  criminal/regulatory/civil/financial disclosure answers are scanned (→ escalate on any affirmative
+  event under FINRA FP Rule 200, else evidenced). The point of interest is the **compensation prong**:
+  a naive tool would flag the portal's "percentage of gross proceeds" / "equity position" comp as a
+  prohibited transaction-based arrangement — but funding portals are *specifically permitted* to take
+  transaction-based comp and a financial interest in an issuer (227.205/300(c)). So the evaluator
+  **surfaces the disclosed compensation for counsel and explicitly refuses to flag it**, stating that
+  permissibility is a legal judgment for counsel, not the system. That is the never-opine discipline
+  working exactly where it's hardest — declining to draw a conclusion that the surface facts seem to
+  invite but the law forbids the system to make. It also sharpens the locus honesty: even on a
+  predominantly-private *conduct* control, the public sub-facts (funds routing, regulatory
+  self-disclosures) are assembled while the genuinely-operational prongs (advice, solicitation) are
+  left to counsel. `make test` green (13 suites).
 - **v0.16 (2026-06-30):** Evidenced the **money-transmission leg** — `funds_qualified_third_party`
   goes from blind `manual_private` to a public-data verification (`scripts/fund-custody-check.py`).
   The insight: the money-transmission risk of a Reg CF raise is *structural* — 227.303(e) routes

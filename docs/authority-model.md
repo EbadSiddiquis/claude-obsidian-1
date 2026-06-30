@@ -4,7 +4,7 @@ Companion to [product-thesis.md](product-thesis.md). Pressure-tests the source-o
 The premise: every load-bearing claim traces to an authoritative source or a named human
 authority. This doc designs the *model*, not a source list.
 
-> Status: v0.5 (2026-06-30). Captured from an architecture pressure-test. Refine per the
+> Status: v0.6 (2026-06-30). Captured from an architecture pressure-test. Refine per the
 > thesis Self-Refinement Protocol.
 
 ## The core correction
@@ -144,12 +144,22 @@ the better wedge.
   broker-dealer via `X-17A-5` FOCUS filings (a qualified third party under 227.303(e)(1), MTL/MSB-
   exempt). `open` when the structure holds (executed agreement + AML stay private), `escalate` on
   portal-holds-funds. Registered as `asm-cfportal-escrow-fields`.
+- **Portal prohibited-conduct evidenced (FP Rule 200):** implemented (v0.17) - the `portal_conduct`
+  evaluator reuses the portal's Form Funding Portal to cross-reference the funds-handling prong and
+  scan the structured criminal/regulatory/civil/financial disclosure answers (affirmative → escalate).
+  Notable as a never-opine boundary case: it surfaces the portal's disclosed compensation but refuses
+  to flag it, because transaction-based comp / a financial interest is permitted to portals
+  (227.205/300(c)) - the system declines a conclusion the surface facts invite but the law forbids it
+  to draw.
 - **Not yet built (automated drift sources only):** FINRA *rulebook/notices* (the FP Rule text
   itself), state blue-sky, and money-transmission *rule-text* drift remain `manual` version_source
-  (no automated drift checker) - distinct from the membership *register* and fund-custody *disclosure*
-  checks above, which are now live.
+  (no automated drift checker) - distinct from the membership *register*, fund-custody *disclosure*,
+  and portal-conduct *disclosure* checks above, which are now live.
 
 ## Revision Log
+- **v0.6 (2026-06-30):** Portal prohibited-conduct evidenced from the Form Funding Portal
+  (funds-handling cross-ref + FP Rule 200 disclosure scan), with a never-opine boundary case:
+  compensation surfaced, not flagged (transaction-based comp is permitted to portals).
 - **v0.5 (2026-06-30):** Money-transmission leg evidenced — `funds_qualified_third_party` is the
   first money-transmission-sovereign control to reach an evidenced state, from the portal's Form
   Funding Portal escrow disclosure + the custodian's broker-dealer (X-17A-5) registration. All three

@@ -102,6 +102,32 @@ def test_latest_cfportal_live_when_no_withdrawal():
     assert_eq("no withdrawal → latest live CFPORTAL/A", "acc-a", fcc._latest_cfportal(subs)[0])
 
 
+# ─── disclosure-answer scan: precise scoping (negative-event subtrees only) ───
+_DISCLOSURES_CLEAN = ("<disclosureAnswers>"
+                      "<criminalDisclosure><isConvictedOfFelony>N</isConvictedOfFelony></criminalDisclosure>"
+                      "<regulatoryActionDisclosure><isOrderAgainst>N</isOrderAgainst>"
+                      "<isAuthorizedToActAttorney>Y</isAuthorizedToActAttorney></regulatoryActionDisclosure>"
+                      "<financialDisclosure><hasSubjectOfBankruptcy>N</hasSubjectOfBankruptcy></financialDisclosure>"
+                      "</disclosureAnswers>")
+
+
+def _cfportal_with(disclosures, extra=""):
+    return CFPORTAL_XML.replace("</formData>", disclosures + extra + "</formData>")
+
+
+def test_parse_disclosures_clean_ignores_neutral_fields():
+    # All negative events; a neutral structural Y (isEngagedInNonSecurities, outside the subtrees) and
+    # the neutral isAuthorizedToActAttorney=Y (inside, denylisted) must NOT be reported as events.
+    d = fcc.parse_cfportal(_cfportal_with(_DISCLOSURES_CLEAN, "<isEngagedInNonSecurities>Y</isEngagedInNonSecurities>"))
+    assert_eq("clean disclosures → no affirmative events", [], d["affirmative_disclosures"])
+
+
+def test_parse_disclosures_flags_real_event_only():
+    d = fcc.parse_cfportal(_cfportal_with(_DISCLOSURES_CLEAN.replace("<isOrderAgainst>N", "<isOrderAgainst>Y")))
+    assert_true("real regulatory event flagged", "isOrderAgainst" in d["affirmative_disclosures"])
+    assert_true("neutral isAuthorizedToActAttorney NOT flagged", "isAuthorizedToActAttorney" not in d["affirmative_disclosures"])
+
+
 def test_latest_cfportal_none_when_absent():
     subs = {"filings": {"recent": {"form": ["C", "D"], "filingDate": ["x", "y"], "accessionNumber": ["1", "2"]}}}
     assert_true("no CFPORTAL → None", fcc._latest_cfportal(subs) is None)
@@ -198,6 +224,8 @@ def test_all_custody_branches_never_opine():
 
 def main():
     test_parse_cfportal()
+    test_parse_disclosures_clean_ignores_neutral_fields()
+    test_parse_disclosures_flags_real_event_only()
     test_latest_cfportal_returns_most_recent_including_withdrawal()
     test_latest_cfportal_live_when_no_withdrawal()
     test_latest_cfportal_none_when_absent()

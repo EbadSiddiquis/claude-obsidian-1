@@ -8,7 +8,7 @@
     "money-transmission",
     "state-blue-sky"
   ],
-  "note": "Control framework for the funding-portal surface, driven by the issuer's Form C (driver: form_c). Demonstrates the multi-sovereign authority model (docs/authority-model.md): a Reg CF raise lives under Federal-SEC (Reg CF, 17 CFR Part 227) + FINRA (Funding Portal Rules, binding on the portal) + money-transmission (who holds investor funds) + state-blue-sky simultaneously. Form C supplies the public-side legs (Form C on file, offering cap vs the $5M rolling ceiling, the single named intermediary by CIK/CRD/007- file number, signature persons for the 227.503 bad-actor screen); portal_finra_member is auto-verified against the SEC (EDGAR CFPORTAL) + FINRA registers; funds_qualified_third_party (money-transmission) is evidenced from the portal's Form Funding Portal escrow disclosure + the custodian's broker-dealer registration (X-17A-5). The FINRA-conduct and state legs remain private/runnable and resolve to open/escalate. Template for counsel sign-off, not legal advice.",
+  "note": "Control framework for the funding-portal surface, driven by the issuer's Form C (driver: form_c). Demonstrates the multi-sovereign authority model (docs/authority-model.md): a Reg CF raise lives under Federal-SEC (Reg CF, 17 CFR Part 227) + FINRA (Funding Portal Rules, binding on the portal) + money-transmission (who holds investor funds) + state-blue-sky simultaneously. Form C supplies the public-side legs (Form C on file, offering cap vs the $5M rolling ceiling, the single named intermediary by CIK/CRD/007- file number, signature persons for the 227.503 bad-actor screen); portal_finra_member is auto-verified against the SEC (EDGAR CFPORTAL) + FINRA registers; funds_qualified_third_party (money-transmission) is evidenced from the portal's Form Funding Portal escrow disclosure + the custodian's broker-dealer registration (X-17A-5); portal_prohibited_conduct reuses that same Form Funding Portal for the funds-handling prong + the portal's criminal/regulatory/civil disclosures (FP Rule 200), surfacing compensation WITHOUT opining on it (a portal may lawfully take transaction-based comp). The remaining advice/solicitation conduct, revenue-report, single-intermediary, and state legs remain private/runnable and resolve to open/escalate. Template for counsel sign-off, not legal advice.",
   "controls": [
     {
       "id": "cf_aggregate_cap",
@@ -92,11 +92,11 @@
         "finra-fp-200"
       ],
       "sovereign": "finra",
-      "locus": "private",
+      "locus": "hybrid",
       "owner": "portal",
       "cadence": "continuous",
       "severity": "exemption_fatal",
-      "eval": "manual_private"
+      "eval": "portal_conduct"
     },
     {
       "id": "portal_revenue_report",

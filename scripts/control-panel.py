@@ -240,6 +240,45 @@ def evaluate(control, fd, ctx):
                             "arrangement - could not fetch it. Confirm a qualified third party (BD/bank/escrow) holds "
                             "investor funds, not the portal, plus AML/BSA controls (private).")
 
+    if key == "portal_conduct":
+        # FINRA prohibited-conduct / FP Rule 200 standing, from the portal's Form Funding Portal
+        # (reuses the CFPORTAL already fetched for the fund-custody leg via ctx - no extra fetch).
+        # DISCIPLINE NOTE: a funding portal MAY lawfully receive transaction-based compensation and
+        # MAY take a financial interest in an issuer (17 CFR 227.205/300(c)) - so we SURFACE the
+        # disclosed compensation for counsel and explicitly do NOT flag it; flagging permitted comp
+        # would be the system drawing a (wrong) legal conclusion.
+        fc = ctx.get("fund_custody") or {}
+        cust = fc.get("custody") or {}
+        if not cust or not cust.get("has_cfportal"):
+            return "open", [], ("Needs the portal's Form Funding Portal (CFPORTAL) to assemble conduct evidence - "
+                                "not available. No-advice / no-solicitation / no-fund-handling / compensation are "
+                                "portal conduct; confirm privately. Counsel assesses.")
+        ev = []
+        # Funds-handling prong - cross-reference the money-transmission leg.
+        if fc.get("state") == "escalate_to_counsel":
+            ev.append("funds-handling prong: see funds_qualified_third_party - FLAGGED (portal may handle investor funds)")
+        elif cust.get("custodian_name"):
+            ev.append(f"funds-handling prong: portal routes investor funds to a third party "
+                      f"('{cust.get('custodian_name')}') per its Form Funding Portal - not held by the portal")
+        comp = cust.get("compensation_desc")
+        if comp:
+            ev.append(f"disclosed compensation (CFPORTAL): {comp[:240]}")
+        affirm = cust.get("affirmative_disclosures") or []
+        if affirm:
+            ev.append(f"portal self-disclosed event(s) in CFPORTAL: {', '.join(affirm)}")
+            return "escalate_to_counsel", ev, ("The portal's Form Funding Portal AFFIRMS a criminal / regulatory / "
+                    "civil / financial disclosure item - assess the portal's standing under FINRA FP Rule 200; counsel.")
+        if fc.get("state") == "escalate_to_counsel":
+            return "escalate_to_counsel", ev, ("The funds-handling prong is flagged (see funds_qualified_third_party); "
+                    "advice/solicitation conduct remains private. Counsel assesses.")
+        ev.append("portal self-disclosures (CFPORTAL criminal/regulatory/civil/financial): all negative")
+        return "open", ev, ("Public CFPORTAL evidence assembled: the funds-handling prong is structurally addressed "
+                "(third-party custodian) and the portal discloses no criminal/regulatory/civil/financial events (FP "
+                "Rule 200). The disclosed compensation is surfaced for review - NOTE: a funding portal MAY receive "
+                "transaction-based compensation and MAY take a financial interest in an issuer (227.205/300(c)); whether "
+                "the arrangement is permissible is a legal judgment for counsel, NOT the system. The no-advice / "
+                "no-solicitation prongs are operational conduct - confirm privately. Counsel assesses.")
+
     if key == "manual_runnable":
         return "open", [], "Runnable against court-order / enforcement data; not yet wired."
     if key == "manual_continuous":
