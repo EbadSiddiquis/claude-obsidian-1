@@ -22,6 +22,7 @@ import os
 import subprocess
 import sys
 
+import assumption_registry as asm_reg
 import authority_registry as areg
 import counsel
 import edgar_formd as efd
@@ -136,11 +137,13 @@ def build(cik, framework_path=CONTROLS, opinions_path=None):
     watchlist = [fd["issuer"]] + [p["name"] for p in fd["related_persons"]]
     ctx = {"watchlist": watchlist, "badactor": run_badactor(watchlist)}
     registry = areg.load_registry()
+    assumptions = asm_reg.load_assumptions()
     rows = []
     for c in framework["controls"]:
         state, evidence, note = evaluate(c, fd, ctx)
         nodes = areg.resolve(c.get("authority_refs"), registry)
-        rows.append({**c, "state": state, "evidence": evidence, "note": note, "authority_nodes": nodes})
+        caveats = [a["statement"] for a in asm_reg.for_control(assumptions, c["id"]) if a["kind"] == "accepted"]
+        rows.append({**c, "state": state, "evidence": evidence, "note": note, "authority_nodes": nodes, "caveats": caveats})
     # Named-counsel terminal node: a fresh opinion closes a control (satisfied_by_counsel); a
     # stale one (law/fact drift) reverts it to escalate. Applied BEFORE counts/urgent.
     if opinions_path:
@@ -183,13 +186,14 @@ def render_html(framework, fd, rows, counts, urgent, coverage, cik):
             if not o.get("fresh"):
                 tag += f' — STALE: {o.get("stale_reason")} — re-opine'
             opin = f'<div style="font-size:12px;color:#8250df;margin-top:4px">{e(tag)}</div>'
+        cavs = "".join(f'<div style="font-size:11px;color:#9a6700;margin-top:2px">! known limitation: {e(c)}</div>' for c in r.get("caveats", []))
         trs.append(
             f'<tr style="border-bottom:1px solid #eaeef2">'
             f'<td><span style="background:{BADGE[r["state"]]};color:#fff;padding:2px 8px;border-radius:10px;font-size:12px;white-space:nowrap">{e(r["state"])}</span></td>'
             f'<td><b>{e(r["id"])}</b><br><span style="color:#444">{e(r["obligation"])}</span></td>'
             f'<td><code>{e(r["authority"])}</code>{pins}</td>'
             f'<td style="font-size:12px;color:#555"><b>{e(r.get("sovereign","?"))}</b><br>{e(r["severity"])}<br>{e(r["locus"])}<br>owner: {e(r["owner"])}</td>'
-            f'<td style="font-size:13px"><ul style="margin:0;padding-left:16px">{ev}</ul><div style="color:#555;margin-top:4px">{e(r["note"])}</div>{opin}</td>'
+            f'<td style="font-size:13px"><ul style="margin:0;padding-left:16px">{ev}</ul><div style="color:#555;margin-top:4px">{e(r["note"])}</div>{opin}{cavs}</td>'
             f'</tr>')
     urgent_li = "".join(f"<li><b>{e(r['id'])}</b> &mdash; {e(r['obligation'])} <code>{e(r['authority'])}</code></li>" for r in urgent)
     return f"""<!doctype html><html><head><meta charset="utf-8">
@@ -258,6 +262,8 @@ def main():
             if not o.get("fresh"):
                 tag += f"  [STALE: {o.get('stale_reason')} - re-opine]"
             print(f"                {tag}")
+        for cav in r.get("caveats", []):
+            print(f"                ! known system limitation: {cav}")
         print(f"                -> {r['note']}\n")
     print("Sovereign coverage (authority-model axis):")
     for s in coverage["in_scope"]:

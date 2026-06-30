@@ -222,6 +222,16 @@ De-risked before building. Findings:
 
 ## Revision Log
 
+- **v0.12 (2026-06-29):** Built the **system-assumption meta-node** (authority-model Tier F) -
+  the last tier; the model's six tiers are now all implemented. `controls/assumptions.json`
+  registers the truths the evaluators rely on: **verifiable** assumptions (executable checks -
+  Form D raw-XML location, field localnames, the '06b' code, eCFR/Federal-Register/AP-RSS shapes)
+  and **accepted** ones (known limitations/heuristics - substring bad-actor matching, the AP
+  rolling-window, the 180-day integration proxy). `scripts/assumption-check.py` runs the
+  verifiable checks against live data (6/6 hold) and, on a VIOLATED check, flags the controls that
+  assumption could silently corrupt. `control-panel.py` surfaces the accepted limitations on the
+  controls that rely on them. This is the "truths about itself" layer that guards the automated
+  surface from being confidently wrong. `make test` green.
 - **v0.11 (2026-06-29):** Wired the **Federal Register drift source** (`scripts/fedreg-watch.py`),
   closing the "binding != codified" gap that a pure eCFR diff misses. Queries the FR API for SEC
   documents since a date and maps them to authority nodes by CFR part: touches a part we cite ->

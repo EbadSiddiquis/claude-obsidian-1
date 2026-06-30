@@ -1,0 +1,86 @@
+{
+  "note": "System-assumption meta-node (authority-model Tier F): the truths the EVALUATORS rely on. A wrong assumption silently flips a control's state, so we model assumptions as first-class, monitored nodes. kind 'verifiable' has an executable check (holds/VIOLATED); kind 'accepted' is a known limitation/heuristic surfaced so it is never forgotten (not auto-checkable). affects_controls links an assumption to the controls it could corrupt ('*' = all Form-D-driven controls).",
+  "assumptions": [
+    {
+      "id": "asm-formd-raw-xml",
+      "kind": "verifiable",
+      "statement": "EDGAR Form D structured XML is at primary_doc.xml (strip the xsl-prefix from submissions' primaryDocument).",
+      "used_by": "edgar_formd.load_form_d",
+      "risk_if_wrong": "Form D parse fails or yields the rendered HTML -> every control's state is silently wrong.",
+      "check": "formd_raw_xml",
+      "affects_controls": ["*"]
+    },
+    {
+      "id": "asm-formd-fields",
+      "kind": "verifiable",
+      "statement": "Form D field localnames are stable: entityName, federalExemptionsExclusions/item, hasNonAccreditedInvestors, dateOfFirstSale/value, relatedPersonInfo.",
+      "used_by": "edgar_formd.parse_form_d",
+      "risk_if_wrong": "A field rename empties an evaluator input -> control silently flips to open/wrong.",
+      "check": "formd_fields",
+      "affects_controls": ["nonaccredited_ceiling", "info_delivery_if_nonaccredited", "form_d_filed", "amount_reconciliation", "bad_actor_506d"]
+    },
+    {
+      "id": "asm-exemption-code-06b",
+      "kind": "verifiable",
+      "statement": "Form D federalExemptionsExclusions encodes Rule 506(b) as the literal code '06b'.",
+      "used_by": "control-panel.evaluate:exemption_is_506b",
+      "risk_if_wrong": "exemption_basis control mis-detects the offering type.",
+      "check": "exemption_code_06b",
+      "affects_controls": ["exemption_basis_506b"]
+    },
+    {
+      "id": "asm-ecfr-versioner",
+      "kind": "verifiable",
+      "statement": "eCFR versioner /versions/title-17.json?part=NNN returns content_versions[] with identifier + amendment_date.",
+      "used_by": "authority-drift.py",
+      "risk_if_wrong": "Codified-law drift detection silently stops working (every node reads unverifiable).",
+      "check": "ecfr_shape",
+      "affects_controls": []
+    },
+    {
+      "id": "asm-fedreg-api",
+      "kind": "verifiable",
+      "statement": "Federal Register API returns results[] with a cfr_references field ([{title, part}]).",
+      "used_by": "fedreg-watch.py",
+      "risk_if_wrong": "Release/order drift mapping silently breaks (binding-but-uncodified gap reopens).",
+      "check": "fedreg_shape",
+      "affects_controls": []
+    },
+    {
+      "id": "asm-ap-rss",
+      "kind": "verifiable",
+      "statement": "SEC Administrative Proceedings RSS (admin.xml) returns <item><title> entries.",
+      "used_by": "badactor-watch.py",
+      "risk_if_wrong": "Bad-actor drift monitor silently returns no matches (looks clean when it is blind).",
+      "check": "ap_rss_shape",
+      "affects_controls": ["bad_actor_506d", "cf_bad_actor_503"]
+    },
+    {
+      "id": "asm-badactor-substring",
+      "kind": "accepted",
+      "statement": "Bad-actor matching is case-insensitive substring matching; false positives are EXPECTED and resolved by human disambiguation.",
+      "used_by": "badactor-watch.check",
+      "risk_if_wrong": "Over-flags (handled: every hit is escalate-to-counsel, never a conclusion) or misses name variants (under-flags).",
+      "check": null,
+      "affects_controls": ["bad_actor_506d", "cf_bad_actor_503"]
+    },
+    {
+      "id": "asm-badactor-rolling-window",
+      "kind": "accepted",
+      "statement": "The AP RSS is a rolling window, not the full history; a non-match is NOT a clearance (historical SALI check pending).",
+      "used_by": "badactor-watch / control-panel",
+      "risk_if_wrong": "A non-match could be read as a clearance. Mitigated: output says 'NOT a clearance'.",
+      "check": null,
+      "affects_controls": ["bad_actor_506d", "cf_bad_actor_503"]
+    },
+    {
+      "id": "asm-integration-180d",
+      "kind": "accepted",
+      "statement": "The integration control uses a +/-180-day EDGAR window as a PUBLIC-SIDE proxy; it is not the legal facts-and-circumstances integration test.",
+      "used_by": "control-panel.evaluate:integration_window",
+      "risk_if_wrong": "Window misses an integration concern outside 180 days. Mitigated: control never 'satisfied'; counsel owns integration.",
+      "check": null,
+      "affects_controls": ["integration"]
+    }
+  ]
+}

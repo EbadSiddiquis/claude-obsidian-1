@@ -116,8 +116,12 @@ the better wedge.
 - **Federal Register drift source:** implemented (v0.11) - `scripts/fedreg-watch.py` maps new SEC
   FR documents to authority nodes by CFR part (AFFECTS-NODES / OTHER-SEC-RULE / UNMAPPED-REVIEW),
   catching binding-but-uncodified actions (orders) that the eCFR diff misses.
-- **Not yet built:** the system-assumption meta-node as data; FINRA/state/MTL automated drift
-  sources.
+- **System-assumption meta-node:** implemented (v0.12) - `controls/assumptions.json` +
+  `scripts/assumption-check.py`. Verifiable assumptions are checked against live data; a VIOLATED
+  check flags the controls it could corrupt; accepted limitations are surfaced on dependent
+  controls in the panel. **All six tiers are now implemented.**
+- **Not yet built (automated drift sources only):** FINRA rulebook/notices, state blue-sky, and
+  money-transmission remain `manual` version_source (no automated checker).
 
 ## Revision Log
 - **v0.2 (2026-06-29):** Marked sovereign axis + provenance/drift as implemented; noted remaining gaps.
