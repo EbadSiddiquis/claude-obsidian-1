@@ -128,6 +128,24 @@ def test_parse_disclosures_flags_real_event_only():
     assert_true("neutral isAuthorizedToActAttorney NOT flagged", "isAuthorizedToActAttorney" not in d["affirmative_disclosures"])
 
 
+def test_parse_disclosures_flags_has_prefixed_event():
+    d = fcc.parse_cfportal(_cfportal_with(_DISCLOSURES_CLEAN.replace("<hasSubjectOfBankruptcy>N", "<hasSubjectOfBankruptcy>Y")))
+    assert_true("has-prefixed financial event flagged", "hasSubjectOfBankruptcy" in d["affirmative_disclosures"])
+
+
+def test_parse_disclosures_prefix_agnostic():
+    # A negative-event leaf that does NOT use an is/has/does prefix must still be caught - relying on
+    # the naming convention would silently miss it (a false 'all-negative' clearance).
+    dz = _DISCLOSURES_CLEAN.replace("</regulatoryActionDisclosure>", "<orderType>Y</orderType></regulatoryActionDisclosure>")
+    d = fcc.parse_cfportal(_cfportal_with(dz))
+    assert_true("non-conventional field name still flagged", "orderType" in d["affirmative_disclosures"])
+
+
+def test_parse_disclosure_subtrees_seen():
+    d = fcc.parse_cfportal(_cfportal_with(_DISCLOSURES_CLEAN))
+    assert_true("subtree count exposed (>=3 in the fixture)", d["disclosure_subtrees_seen"] >= 3)
+
+
 def test_latest_cfportal_none_when_absent():
     subs = {"filings": {"recent": {"form": ["C", "D"], "filingDate": ["x", "y"], "accessionNumber": ["1", "2"]}}}
     assert_true("no CFPORTAL → None", fcc._latest_cfportal(subs) is None)
@@ -226,6 +244,9 @@ def main():
     test_parse_cfportal()
     test_parse_disclosures_clean_ignores_neutral_fields()
     test_parse_disclosures_flags_real_event_only()
+    test_parse_disclosures_flags_has_prefixed_event()
+    test_parse_disclosures_prefix_agnostic()
+    test_parse_disclosure_subtrees_seen()
     test_latest_cfportal_returns_most_recent_including_withdrawal()
     test_latest_cfportal_live_when_no_withdrawal()
     test_latest_cfportal_none_when_absent()

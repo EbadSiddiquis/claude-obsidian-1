@@ -161,6 +161,19 @@ def _cfportal_escrow_fields(ctx):
     return ok, f"custodian={cust.get('custodian_name')!r}; registered-BD={bd.get('is_registered_bd')}"
 
 
+@check("cfportal_disclosure_fields")
+def _cfportal_disclosure_fields(ctx):
+    try:
+        cust = fund_custody.load_portal_custody(REF_PORTAL_CIK)
+    except SystemExit as e:
+        return None, f"fetch failed: {e}"
+    if not cust.get("has_cfportal") or cust.get("withdrawn"):
+        return None, f"reference portal CIK {REF_PORTAL_CIK} has no live CFPORTAL"
+    seen = cust.get("disclosure_subtrees_seen", 0)
+    # The negative-event subtrees must still be present (else the scan silently sees nothing).
+    return seen >= 1, f"disclosure subtrees present={seen}; affirmative={cust.get('affirmative_disclosures')}"
+
+
 def main():
     ap = argparse.ArgumentParser(description="Verify the system's own assumptions (Tier F meta-node).")
     ap.add_argument("--json", action="store_true")

@@ -65,15 +65,22 @@ _AFFIRMATIVE = {"Y", "YES", "TRUE"}
 
 def _scan_disclosures(root) -> list:
     """Affirmative (Y/true) answers within the criminal/regulatory/civil/financial disclosure
-    subtrees - the portal's self-disclosed events (FINRA FP Rule 200 standing). Empty == clean."""
+    subtrees - the portal's self-disclosed events (FINRA FP Rule 200 standing). Empty == clean.
+
+    Prefix-AGNOSTIC by design: we flag ANY leaf in those subtrees whose text is affirmative,
+    regardless of element name. Relying on an is/has/does naming convention would SILENTLY MISS a
+    negative-event field that broke the convention (e.g. `orderType`) -> a false "all-negative"
+    clearance, the unsafe direction. Follow-up detail elements carry free text, not Y/YES/TRUE, so
+    they don't false-positive; only the one genuinely-neutral field is denylisted."""
     out = []
     for el in root.iter():
         if efd._ln(el.tag) not in _DISCLOSURE_SUBTREES:
             continue
         for sub in el.iter():
             n = efd._ln(sub.tag)
-            if n.startswith(("is", "has", "does")) and n not in _NEUTRAL_DISCLOSURE_FIELDS \
-                    and (sub.text or "").strip().upper() in _AFFIRMATIVE and n not in out:
+            if n in _DISCLOSURE_SUBTREES or n in _NEUTRAL_DISCLOSURE_FIELDS:
+                continue
+            if (sub.text or "").strip().upper() in _AFFIRMATIVE and n not in out:
                 out.append(n)
     return out
 
@@ -97,6 +104,9 @@ def parse_cfportal(xml: str) -> dict:
         "custodian_location": loc,
         "compensation_desc": efd._first_text(root, "compensationDesc"),
         "affirmative_disclosures": _scan_disclosures(root),
+        # How many of the four negative-event subtrees are present - so a schema drift that renames
+        # or drops them (which would silently yield "all negative") is detectable by the assumption check.
+        "disclosure_subtrees_seen": sum(1 for el in root.iter() if efd._ln(el.tag) in _DISCLOSURE_SUBTREES),
     }
 
 

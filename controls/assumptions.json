@@ -83,6 +83,15 @@
       "affects_controls": ["funds_qualified_third_party"]
     },
     {
+      "id": "asm-cfportal-disclosure-fields",
+      "kind": "verifiable",
+      "statement": "Form Funding Portal discloses regulatory history in four negative-event subtrees (criminalDisclosure / regulatoryActionDisclosure / civilJudicialActionDisclosure / financialDisclosure); affirmative leaves there are self-disclosed events (FP Rule 200). The scan is prefix-agnostic so a renamed field is not silently missed.",
+      "used_by": "fund-custody-check._scan_disclosures",
+      "risk_if_wrong": "If the subtrees are renamed/dropped, the scan finds nothing -> a false 'all-negative' clearance on portal_prohibited_conduct.",
+      "check": "cfportal_disclosure_fields",
+      "affects_controls": ["portal_prohibited_conduct"]
+    },
+    {
       "id": "asm-fileno-normalize",
       "kind": "accepted",
       "statement": "SEC funding-portal file numbers normalize to FINRA's display form by stripping leading-zero padding per hyphen part (007-00042 -> 7-42); this is the join key between the two registers.",

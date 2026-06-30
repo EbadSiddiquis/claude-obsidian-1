@@ -254,8 +254,12 @@ def evaluate(control, fd, ctx):
                                 "not available. No-advice / no-solicitation / no-fund-handling / compensation are "
                                 "portal conduct; confirm privately. Counsel assesses.")
         ev = []
-        # Funds-handling prong - cross-reference the money-transmission leg.
-        if fc.get("state") == "escalate_to_counsel":
+        withdrawn = cust.get("withdrawn")
+        # Funds-handling prong - cross-reference the money-transmission leg, with cause-appropriate
+        # evidence (a withdrawn portal escalates because it is DEREGISTERED, not because it holds funds).
+        if withdrawn:
+            ev.append("portal registration WITHDRAWN (see portal_finra_member / funds_qualified_third_party) - deregistered")
+        elif fc.get("state") == "escalate_to_counsel":
             ev.append("funds-handling prong: see funds_qualified_third_party - FLAGGED (portal may handle investor funds)")
         elif cust.get("custodian_name"):
             ev.append(f"funds-handling prong: portal routes investor funds to a third party "
@@ -269,8 +273,9 @@ def evaluate(control, fd, ctx):
             return "escalate_to_counsel", ev, ("The portal's Form Funding Portal AFFIRMS a criminal / regulatory / "
                     "civil / financial disclosure item - assess the portal's standing under FINRA FP Rule 200; counsel.")
         if fc.get("state") == "escalate_to_counsel":
-            return "escalate_to_counsel", ev, ("The funds-handling prong is flagged (see funds_qualified_third_party); "
-                    "advice/solicitation conduct remains private. Counsel assesses.")
+            reason = ("the portal's funding-portal registration is WITHDRAWN" if withdrawn
+                      else "the funds-handling prong is flagged (see funds_qualified_third_party)")
+            return "escalate_to_counsel", ev, (f"{reason}; advice/solicitation conduct remains private. Counsel assesses.")
         ev.append("portal self-disclosures (CFPORTAL criminal/regulatory/civil/financial): all negative")
         return "open", ev, ("Public CFPORTAL evidence assembled: the funds-handling prong is structurally addressed "
                 "(third-party custodian) and the portal discloses no criminal/regulatory/civil/financial events (FP "

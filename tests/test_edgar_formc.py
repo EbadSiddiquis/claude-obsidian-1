@@ -204,6 +204,19 @@ def test_portal_conduct_funds_flagged_escalates():
     assert_eq("funds-handling prong flagged → escalate", "escalate_to_counsel", state)
 
 
+def test_portal_conduct_withdrawn_cites_right_reason():
+    # A withdrawn portal escalates because it is DEREGISTERED, not because it handles funds.
+    ctx = {"fund_custody": {"state": "escalate_to_counsel", "custody": {
+        "has_cfportal": True, "withdrawn": True, "custodian_name": None,
+        "compensation_desc": None, "affirmative_disclosures": []}}}
+    state, ev, note = _eval_ctx("portal_conduct", ctx)
+    assert_eq("withdrawn → escalate", "escalate_to_counsel", state)
+    assert_true("evidence cites withdrawal, not fund-handling", any("WITHDRAWN" in e for e in ev))
+    assert_true("evidence does NOT misattribute to fund-handling",
+                not any("may handle investor funds" in e for e in ev))
+    assert_true("note cites withdrawal", "WITHDRAWN" in note)
+
+
 def test_portal_conduct_no_cfportal_open():
     state, _ev, _note = _eval_ctx("portal_conduct", {"fund_custody": {"state": "open", "custody": {"has_cfportal": False}}})
     assert_eq("no CFPORTAL → open (unevidenced)", "open", state)
@@ -221,6 +234,7 @@ def main():
     test_portal_conduct_clean_open_and_does_not_flag_comp()
     test_portal_conduct_affirmative_disclosure_escalates()
     test_portal_conduct_funds_flagged_escalates()
+    test_portal_conduct_withdrawn_cites_right_reason()
     test_portal_conduct_no_cfportal_open()
     test_portal_conduct_never_opine()
     test_parse_form_c_fields()
