@@ -89,6 +89,56 @@ def run_fund_custody(fd):
         return None
 
 
+def _parse_deadline(s):
+    """Form C deadlineDate is MM-DD-YYYY -> date, or None."""
+    try:
+        m, d, y = str(s).split("-")
+        return datetime.date(int(y), int(m), int(d))
+    except (ValueError, AttributeError):
+        return None
+
+
+def _intermediary_key(r):
+    """Stable identity for an intermediary across filings: CIK if present, else file number, else
+    name. Avoids under-counting a distinct intermediary whose CIK didn't parse. None if unknown."""
+    cik = r.get("intermediary_cik")
+    if cik is not None:
+        try:
+            return str(int(cik))
+        except (TypeError, ValueError):
+            return str(cik)
+    return r.get("intermediary_file_number") or r.get("intermediary_name") or None
+
+
+def _concurrent_distinct_intermediaries(rows):
+    """True if two of the issuer's Form C filings name DIFFERENT intermediaries with OVERLAPPING
+    offering windows [filingDate, deadlineDate] - i.e. a single offering period served by more than
+    one intermediary (the 227.300(b) concern), as opposed to permitted sequential raises. A missing
+    end-date is treated as open-ended (conservatively overlaps), erring toward escalate (safe)."""
+    wins = []
+    for r in rows:
+        key = _intermediary_key(r)
+        try:
+            start = datetime.date.fromisoformat(r.get("date")) if r.get("date") else None
+        except ValueError:
+            start = None
+        if key is None or start is None:
+            continue
+        wins.append((key, start, _parse_deadline(r.get("deadline_date"))))
+    for i in range(len(wins)):
+        for j in range(i + 1, len(wins)):
+            ci, si, ei = wins[i]
+            cj, sj, ej = wins[j]
+            if ci == cj:
+                continue
+            # overlap if start_i <= end_j and start_j <= end_i (open-ended end -> always satisfies)
+            le_ij = (ei is None) or (sj <= ei)
+            le_ji = (ej is None) or (si <= ej)
+            if le_ij and le_ji:
+                return True
+    return False
+
+
 def evaluate(control, fd, ctx):
     """Return (state, evidence, note) for one control given parsed Form D `fd` and shared ctx."""
     key = control["eval"]
@@ -240,6 +290,57 @@ def evaluate(control, fd, ctx):
                             "arrangement - could not fetch it. Confirm a qualified third party (BD/bank/escrow) holds "
                             "investor funds, not the portal, plus AML/BSA controls (private).")
 
+    if key == "cf_single_intermediary":
+        # Cross-check the issuer's own Form C record: does every Form C / C-A name ONE intermediary?
+        # Distinct intermediaries across SEQUENTIAL offerings are permitted; distinct intermediaries
+        # over OVERLAPPING offering windows are the 227.300(b) concern. Public-record consistency
+        # only - exclusivity also depends on off-platform conduct, which stays private.
+        scan = ctx.get("form_c_intermediaries")
+        if not scan or not scan.get("rows"):
+            return "open", [], ("Needs the issuer's Form C filings to cross-check the intermediary - not available. "
+                                "Confirm the offering was conducted exclusively through one registered intermediary (private).")
+        rows = scan["rows"]
+        distinct = {_intermediary_key(r) for r in rows if _intermediary_key(r) is not None}
+        ev = [f"{r['form']} {r['date']}: {r.get('intermediary_name')} (CIK {r.get('intermediary_cik')})" for r in rows]
+
+        # Incompleteness guards - an incomplete scan must NOT clear to a clean single-intermediary
+        # record (that would be a false clearance on an exemption-fatal control). Sources of gaps:
+        # truncation (older filings unscanned), a Form C that failed to parse (rows < C/C-A filings),
+        # or a filing whose intermediary couldn't be resolved at all.
+        total_cf = sum(1 for f in (fd.get("all_filings") or []) if f.get("form", "").upper() in ("C", "C/A"))
+        truncated = scan.get("truncated")
+        parse_gap = (not truncated) and len(rows) < total_cf
+        unresolved = any(_intermediary_key(r) is None for r in rows)
+        incomplete = bool(truncated or parse_gap or unresolved)
+        if truncated:
+            ev.append("note: only the most recent Form C filings were scanned (older ones not checked)")
+        if parse_gap:
+            ev.append(f"note: {total_cf - len(rows)} of {total_cf} Form C / C-A filing(s) could not be parsed (not cross-checked)")
+        if unresolved:
+            ev.append("note: a scanned Form C did not resolve an intermediary identity")
+
+        # Concurrent distinct intermediaries -> escalate regardless of completeness (a real flag).
+        if len(distinct) > 1 and _concurrent_distinct_intermediaries(rows):
+            return "escalate_to_counsel", ev, ("The issuer's Form C filings name DISTINCT intermediaries with OVERLAPPING "
+                                "offering windows - a single offering period may have used more than one intermediary, "
+                                "which 227.300(b) prohibits. Counsel assesses.")
+        if len(distinct) > 1:
+            return "open", ev, ("The issuer's Form C filings name distinct intermediaries in NON-overlapping periods - "
+                                "consistent with separate SEQUENTIAL Reg CF offerings (permitted). Confirm no single offering "
+                                "spanned more than one intermediary; counsel confirms.")
+        if len(distinct) == 0:
+            return "open", ev, ("Could not identify the intermediary from the issuer's scanned Form C filing(s) - this is "
+                                "NOT a confirmation of a single intermediary. Confirm the offering used one registered "
+                                "intermediary (manual). Counsel assesses.")
+        # Exactly one distinct intermediary seen. Only call it a clean record if the scan was COMPLETE.
+        if incomplete:
+            return "open", ev, ("The Form C filings that were scanned name a single intermediary, but the scan was "
+                                "INCOMPLETE (see notes) - this is NOT a full-record confirmation. Verify the unscanned / "
+                                "unparsed filings and confirm exclusivity + no off-platform solicitation (private). Counsel assesses.")
+        return "open", ev, ("The issuer's Form C filing(s) on EDGAR all name a single intermediary - the public "
+                            "record is consistent with conducting the offering through one intermediary (227.300(b)). "
+                            "Confirm no off-platform / multi-channel solicitation occurred (private). Counsel confirms.")
+
     if key == "portal_conduct":
         # FINRA prohibited-conduct / FP Rule 200 standing, from the portal's Form Funding Portal
         # (reuses the CFPORTAL already fetched for the fund-custody leg via ctx - no extra fetch).
@@ -328,6 +429,10 @@ def build(cik, framework_path=CONTROLS, opinions_path=None):
     if fd.get("intermediary_cik") or fd.get("intermediary_file_number"):
         ctx["portal"] = run_portal_check(fd)
         ctx["fund_custody"] = run_fund_custody(fd)
+    # Single-intermediary cross-check: which intermediary does each of the issuer's Form C filings name?
+    if driver == "form_c":
+        rows, truncated = efd.list_form_c_intermediaries(cik, fd.get("all_filings", []))
+        ctx["form_c_intermediaries"] = {"rows": rows, "truncated": truncated}
     registry = areg.load_registry()
     assumptions = asm_reg.load_assumptions()
     rows = []

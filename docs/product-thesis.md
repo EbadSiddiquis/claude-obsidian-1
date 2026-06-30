@@ -222,6 +222,19 @@ De-risked before building. Findings:
 
 ## Revision Log
 
+- **v0.18 (2026-06-30):** Cross-checked the **single-intermediary** rule (`cf_single_intermediary`,
+  227.300(b)) against the issuer's own public Form C record — from blind to a deterministic EDGAR
+  test. It scans the issuer's Form C / C-A filings for the named intermediary and reuses the
+  integration-check's time-window logic to separate the *permitted* case (distinct intermediaries in
+  non-overlapping, sequential raises) from the *concerning* one (distinct intermediaries over
+  overlapping offering windows → escalate). Missing deadline → conservative overlap (escalate-safe);
+  the cap is surfaced, never silent. Still never `satisfied` — exclusivity also turns on off-platform
+  conduct, which stays private. This is a third reuse of the same "issuer's other EDGAR filings as a
+  public cross-check" pattern (after Form D integration and the bad-actor screen), which is becoming a
+  reusable primitive: the public record constrains, counsel confirms the private remainder. With this,
+  every federal-SEC control in the funding-portal set draws on public data; only genuinely-private
+  conduct (advice/solicitation), the FINRA-internal revenue report, and the state-notice leg remain
+  manual. `make test` green (13 suites).
 - **v0.17 (2026-06-30):** Evidenced **portal prohibited-conduct** (`portal_prohibited_conduct`) — and
   in doing so passed a real never-opine discipline test. The `portal_conduct` evaluator reuses the
   portal's Form Funding Portal (already fetched for fund-custody) to assemble public evidence: the

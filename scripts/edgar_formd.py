@@ -38,10 +38,11 @@ def fetch_submissions(cik: str) -> dict:
 
 
 def list_filings(subs: dict) -> list:
-    """[{form, date, accession}] for the issuer's recent filings."""
+    """[{form, date, accession, primary_document}] for the issuer's recent filings. primary_document
+    is the submissions' primaryDocument (the XSLT-styled path); strip its dir prefix for raw XML."""
     r = subs["filings"]["recent"]
-    return [{"form": f, "date": d, "accession": a}
-            for f, d, a in zip(r["form"], r["filingDate"], r["accessionNumber"])]
+    return [{"form": f, "date": d, "accession": a, "primary_document": pd}
+            for f, d, a, pd in zip(r["form"], r["filingDate"], r["accessionNumber"], r["primaryDocument"])]
 
 
 def _pick_form_d(subs: dict):
@@ -208,6 +209,34 @@ def parse_form_c(xml: str) -> dict:
         "deadline_date": _first_text(root, "deadlineDate"),
         "state_jurisdictions": states,
     }
+
+
+def list_form_c_intermediaries(cik: str, all_filings: list, cap: int = 10):
+    """For each of the issuer's Form C / C-A filings, fetch + parse its primary_doc.xml and pull the
+    named intermediary - so the single-intermediary control (227.300(b)) can cross-check whether the
+    issuer's public Form C record names one intermediary or several. Returns (rows, truncated).
+
+    Capped at `cap` fetches (newest-first) to bound cost; `truncated` flags when more existed (the
+    no-silent-caps principle - the caller surfaces it)."""
+    # Up to `cap` sequential sec-fetch.sh subprocess calls; the SEC 10-req/s ceiling is the cost floor.
+    cfs = [f for f in all_filings if f.get("form", "").upper() in ("C", "C/A")]
+    truncated = len(cfs) > cap
+    rows = []
+    for f in cfs[:cap]:
+        raw_doc = (f.get("primary_document") or "").split("/")[-1] or "primary_doc.xml"
+        try:
+            fc = parse_form_c(fetch_archive_doc(cik, f["accession"], raw_doc))
+        except (Exception, SystemExit):
+            # A single unparseable filing OR a failed fetch (sec_fetch sys.exits on non-zero rc) must
+            # not sink the cross-check; it is dropped here and surfaces as a parse-gap to the caller,
+            # which refuses a clean single-intermediary clearance when rows < the C/C-A filings present.
+            continue
+        rows.append({**f,
+                     "intermediary_cik": fc.get("intermediary_cik"),
+                     "intermediary_name": fc.get("intermediary_name"),
+                     "intermediary_file_number": fc.get("intermediary_file_number"),
+                     "deadline_date": fc.get("deadline_date")})
+    return rows, truncated
 
 
 def load_form_c(cik: str) -> dict:
