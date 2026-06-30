@@ -127,22 +127,36 @@ def evaluate(control, fd, ctx):
         cap = 5_000_000
         tgt, mx = fd.get("offering_amount"), fd.get("maximum_offering_amount")
         ev = [f"Form C target (offeringAmount): {tgt}", f"Form C maximum (maximumOfferingAmount): {mx}"]
-        try:
-            mxf = float(mx) if mx is not None else None
-        except ValueError:
-            mxf = None
-        if mxf is not None and mxf > cap:
-            return "escalate_to_counsel", ev, "This Form C's maximum EXCEEDS the $5,000,000 Reg CF ceiling - assess (counsel)."
-        if mxf is not None:
-            return "open", ev, ("This offering's maximum is within the $5,000,000 ceiling, but the Reg CF cap is a "
+
+        def _amt(x):
+            try:
+                return float(x) if x is not None else None
+            except (ValueError, TypeError):
+                return None
+        # Prefer the maximum (the cap is tested against the most the issuer can raise); fall back to
+        # the target so a missing/malformed maximum still escalates on the number we DO have.
+        amt = _amt(mx)
+        basis = "maximum"
+        if amt is None:
+            amt = _amt(tgt)
+            basis = "target (maximum not parseable)"
+        if amt is not None and amt > cap:
+            return "escalate_to_counsel", ev, f"This Form C's {basis} EXCEEDS the $5,000,000 Reg CF ceiling - assess (counsel)."
+        if amt is not None:
+            return "open", ev, (f"This offering's {basis} is within the $5,000,000 ceiling, but the Reg CF cap is a "
                                 "ROLLING 12-month AGGREGATE across all of the issuer's Reg CF raises - reconcile against any "
                                 "other Reg CF offerings in the trailing 12 months (private). Not a clearance; counsel confirms.")
-        return "open", ev, "Maximum offering amount not determinable from Form C; confirm vs the $5M rolling 12-month cap."
+        return "open", ev, "Neither maximum nor target offering amount parseable from Form C; confirm vs the $5M rolling 12-month cap."
 
     if key == "cf_form_c_filed":
-        return "satisfied", [f"Form {fd.get('form_type', 'C')} on EDGAR: accession {fd.get('accession')} (filed {fd.get('filing_date')})"], \
-            ("Form C is on file with the SEC (public fact). Confirm it preceded the offering's commencement, and that "
-             "Form C-AR annual reports are filed while the reporting obligation runs (continuous).")
+        # A Form C is on EDGAR (load_form_c errored out otherwise) - but the obligation is multi-part:
+        # filed BEFORE the offering commences + Form C-AR annually. Only the existence leg is a verified
+        # public fact; timing and the continuous C-AR leg are not. So this stays `open`, mirroring the
+        # Form D analog (form_d_filed) - never mark a partly-unverified exemption-fatal obligation satisfied.
+        return "open", [f"Form {fd.get('form_type', 'C')} on EDGAR: accession {fd.get('accession')} (filed {fd.get('filing_date')})"], \
+            ("A Form C is on file with the SEC (existence verified from EDGAR). NOT a clearance: confirm it "
+             "preceded the offering's commencement, and that Form C-AR annual reports are filed while the "
+             "reporting obligation runs (continuous).")
 
     if key == "cf_intermediary":
         nm, icik = fd.get("intermediary_name"), fd.get("intermediary_cik")

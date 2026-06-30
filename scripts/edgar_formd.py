@@ -73,6 +73,14 @@ def _first_text(root, localname):
     return None
 
 
+def _find(root, localname):
+    """First element (in document order) whose localname matches; None if absent."""
+    for el in root.iter():
+        if _ln(el.tag) == localname:
+            return el
+    return None
+
+
 def parse_form_d(xml: str) -> dict:
     """Structured extract of the fields the control panel needs (namespace-agnostic)."""
     root = ET.fromstring(xml.encode("utf-8"))
@@ -145,6 +153,9 @@ def load_form_d(cik: str) -> dict:
 # ---------------------------------------------------------------------------
 
 def _pick_form_c(subs: dict):
+    # The offering's Form C is "C" (initial) or "C/A" (amendment). Intentionally NOT C-U
+    # (progress update) or C-AR / C-AR/A (annual report) / C-TR (termination) - those are
+    # follow-on filings with a different schema, not the offering document this panel drives.
     r = subs["filings"]["recent"]
     for form, acc, doc in zip(r["form"], r["accessionNumber"], r["primaryDocument"]):
         if form in ("C", "C/A"):
@@ -174,13 +185,20 @@ def parse_form_c(xml: str) -> dict:
     states = [el.text.strip() for el in root.iter()
               if _ln(el.tag) == "issueJurisdictionSecuritiesOffering" and (el.text or "").strip()]
 
+    # The intermediary block (companyName / commissionCik / commissionFileNumber / crdNumber)
+    # lives directly under issuerInformation as siblings of issuerInfo; scope the lookup there so
+    # a generic localname like companyName can't be captured from some other block by a whole-tree
+    # first-match. issuerInfo (the issuer's own subtree) carries nameOfIssuer, not companyName, so
+    # this scope stays unambiguous. Fall back to the whole tree if the block is absent.
+    iinfo = _find(root, "issuerInformation") or root
+
     return {
         "issuer": _first_text(root, "nameOfIssuer"),
         "related_persons": people,
-        "intermediary_name": _first_text(root, "companyName"),
-        "intermediary_cik": _first_text(root, "commissionCik"),
-        "intermediary_file_number": _first_text(root, "commissionFileNumber"),
-        "intermediary_crd": _first_text(root, "crdNumber"),
+        "intermediary_name": _first_text(iinfo, "companyName"),
+        "intermediary_cik": _first_text(iinfo, "commissionCik"),
+        "intermediary_file_number": _first_text(iinfo, "commissionFileNumber"),
+        "intermediary_crd": _first_text(iinfo, "crdNumber"),
         "offering_amount": _first_text(root, "offeringAmount"),
         "maximum_offering_amount": _first_text(root, "maximumOfferingAmount"),
         "security_type": _first_text(root, "securityOfferedType"),
