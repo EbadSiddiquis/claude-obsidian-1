@@ -23,6 +23,7 @@ import subprocess
 import sys
 
 import authority_registry as areg
+import counsel
 import edgar_formd as efd
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -129,7 +130,7 @@ def sovereign_coverage(framework, rows):
     }
 
 
-def build(cik, framework_path=CONTROLS):
+def build(cik, framework_path=CONTROLS, opinions_path=None):
     framework = json.load(open(framework_path, encoding="utf-8"))
     fd = efd.load_form_d(cik)
     watchlist = [fd["issuer"]] + [p["name"] for p in fd["related_persons"]]
@@ -140,6 +141,11 @@ def build(cik, framework_path=CONTROLS):
         state, evidence, note = evaluate(c, fd, ctx)
         nodes = areg.resolve(c.get("authority_refs"), registry)
         rows.append({**c, "state": state, "evidence": evidence, "note": note, "authority_nodes": nodes})
+    # Named-counsel terminal node: a fresh opinion closes a control (satisfied_by_counsel); a
+    # stale one (law/fact drift) reverts it to escalate. Applied BEFORE counts/urgent.
+    if opinions_path:
+        counsel.apply_opinions(rows, counsel.load_opinions(opinions_path), registry,
+                               {"form_d_accession": fd.get("accession")})
     counts = {}
     for r in rows:
         counts[r["state"]] = counts.get(r["state"], 0) + 1
@@ -148,7 +154,8 @@ def build(cik, framework_path=CONTROLS):
     return framework, fd, rows, counts, urgent, coverage
 
 
-BADGE = {"satisfied": "#1a7f37", "open": "#6e7781", "escalate_to_counsel": "#bc4c00", "n/a": "#0969da"}
+BADGE = {"satisfied": "#1a7f37", "open": "#6e7781", "escalate_to_counsel": "#bc4c00", "n/a": "#0969da",
+         "satisfied_by_counsel": "#8250df"}
 
 
 def render_html(framework, fd, rows, counts, urgent, coverage, cik):
@@ -169,13 +176,20 @@ def render_html(framework, fd, rows, counts, urgent, coverage, cik):
     for r in rows:
         ev = "".join(f"<li>{e(str(x))}</li>" for x in r["evidence"])
         pins = "".join(f'<div style="font-size:11px;color:#777">{e(n["id"])}@{e(n["pinned_version"])}</div>' for n in r.get("authority_nodes", []))
+        opin = ""
+        if r.get("opinion"):
+            o = r["opinion"]
+            tag = f'by counsel: {o.get("attorney")} ({o.get("date")}, {o.get("id")})'
+            if not o.get("fresh"):
+                tag += f' — STALE: {o.get("stale_reason")} — re-opine'
+            opin = f'<div style="font-size:12px;color:#8250df;margin-top:4px">{e(tag)}</div>'
         trs.append(
             f'<tr style="border-bottom:1px solid #eaeef2">'
             f'<td><span style="background:{BADGE[r["state"]]};color:#fff;padding:2px 8px;border-radius:10px;font-size:12px;white-space:nowrap">{e(r["state"])}</span></td>'
             f'<td><b>{e(r["id"])}</b><br><span style="color:#444">{e(r["obligation"])}</span></td>'
             f'<td><code>{e(r["authority"])}</code>{pins}</td>'
             f'<td style="font-size:12px;color:#555"><b>{e(r.get("sovereign","?"))}</b><br>{e(r["severity"])}<br>{e(r["locus"])}<br>owner: {e(r["owner"])}</td>'
-            f'<td style="font-size:13px"><ul style="margin:0;padding-left:16px">{ev}</ul><div style="color:#555;margin-top:4px">{e(r["note"])}</div></td>'
+            f'<td style="font-size:13px"><ul style="margin:0;padding-left:16px">{ev}</ul><div style="color:#555;margin-top:4px">{e(r["note"])}</div>{opin}</td>'
             f'</tr>')
     urgent_li = "".join(f"<li><b>{e(r['id'])}</b> &mdash; {e(r['obligation'])} <code>{e(r['authority'])}</code></li>" for r in urgent)
     return f"""<!doctype html><html><head><meta charset="utf-8">
@@ -206,11 +220,12 @@ def main():
     ap = argparse.ArgumentParser(description="Render the Rule 506(b) counsel-ready control panel for a CIK (never-opine).")
     ap.add_argument("--cik", required=True)
     ap.add_argument("--framework", default=CONTROLS, help="control framework JSON (default: reg-d-506b.json)")
+    ap.add_argument("--opinions", metavar="PATH", help="opinions-of-record JSON (named-counsel node)")
     ap.add_argument("--json", action="store_true")
     ap.add_argument("--html", metavar="PATH", help="write a self-contained HTML report to PATH")
     args = ap.parse_args()
 
-    framework, fd, rows, counts, urgent, coverage = build(args.cik, args.framework)
+    framework, fd, rows, counts, urgent, coverage = build(args.cik, args.framework, args.opinions)
 
     if args.html:
         with open(args.html, "w", encoding="utf-8") as fh:
@@ -225,9 +240,10 @@ def main():
                           "exemption_fatal_open": [r["id"] for r in urgent], "controls": rows}, indent=2))
         return
 
-    MARK = {"satisfied": "OK ", "open": "open", "escalate_to_counsel": "FLAG->counsel", "n/a": "n/a "}
+    MARK = {"satisfied": "OK ", "open": "open", "escalate_to_counsel": "FLAG->counsel", "n/a": "n/a ",
+            "satisfied_by_counsel": "BY COUNSEL"}
     print(f"Counsel-ready control panel | {framework['offering_type']} | {fd['issuer']} | CIK {int(args.cik)} | Form D {fd.get('accession')}")
-    print(" · ".join(f"{k}: {v}" for k, v in sorted(counts.items())) + " · conclusions drawn: 0\n")
+    print(" · ".join(f"{k}: {v}" for k, v in sorted(counts.items())) + " · conclusions drawn by the system: 0\n")
     for r in rows:
         print(f"[{MARK[r['state']]:>13}] {r['id']}  [{r.get('sovereign','?')}] ({r['severity']}, {r['locus']}, owner={r['owner']})")
         print(f"                {r['obligation']}")
@@ -236,6 +252,12 @@ def main():
             print(f"                pinned: " + ", ".join(f"{n['id']}@{n['pinned_version']}" for n in r["authority_nodes"]))
         for ev in r["evidence"]:
             print(f"                  - {ev}")
+        if r.get("opinion"):
+            o = r["opinion"]
+            tag = f"by counsel: {o.get('attorney')} ({o.get('date')}, {o.get('id')})"
+            if not o.get("fresh"):
+                tag += f"  [STALE: {o.get('stale_reason')} - re-opine]"
+            print(f"                {tag}")
         print(f"                -> {r['note']}\n")
     print("Sovereign coverage (authority-model axis):")
     for s in coverage["in_scope"]:

@@ -109,8 +109,12 @@ the better wedge.
   eCFR-sourced nodes and propagates stale-flags to dependent controls. eCFR is auto-checkable today;
   Federal Register (releases/orders), C&DIs, FINRA, and state remain `manual` version_source (no
   automated checker wired yet).
-- **Not yet built:** the named-counsel terminal node (opinion-of-record with decay); the
-  system-assumption meta-node as data; FINRA/state/MTL automated drift sources.
+- **Named-counsel terminal node:** implemented (v0.10) - `scripts/counsel.py` + `opinions/*.json`.
+  A fresh opinion closes controls to `satisfied_by_counsel` (attributed to a named attorney/date);
+  it decays on law-drift (cited authority pinned_version moved) or fact-drift (relied-on filing
+  superseded), reverting to escalate.
+- **Not yet built:** the system-assumption meta-node as data; FINRA/state/MTL automated drift
+  sources; the Federal Register (releases/orders) automated drift source.
 
 ## Revision Log
 - **v0.2 (2026-06-29):** Marked sovereign axis + provenance/drift as implemented; noted remaining gaps.

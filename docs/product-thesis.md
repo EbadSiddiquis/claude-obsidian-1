@@ -222,6 +222,16 @@ De-risked before building. Findings:
 
 ## Revision Log
 
+- **v0.10 (2026-06-29):** Built the **named-counsel terminal node** (the authority the thesis
+  hinges on). `scripts/counsel.py` + an opinions-of-record file (`opinions/*.json`): a fresh
+  opinion *closes* covered controls into `satisfied_by_counsel`, **attributed to a named
+  attorney + date + opinion id** (the system still draws 0 conclusions). The opinion **decays**:
+  it snapshots the authority versions + facts it relied on, and `control-panel.py --opinions`
+  reverts a control to `escalate_to_counsel` ("STALE - re-opine") when a cited authority's
+  pinned_version drifts (law-drift, via the registry) or the underlying Form D is superseded
+  (fact-drift). Verified end-to-end (4 controls close; un-snapshotting law+fact reverts them).
+  This is the piece that makes "counsel opined, and the system knows when that opinion went
+  stale" actually work. `make test` green.
 - **v0.9 (2026-06-29):** Implemented **provenance-as-edge + version-pinned drift** (authority
   model made real). `controls/authorities.json` is the authority REGISTRY (nodes: type,
   sovereign, citation, `pinned_version`, `version_source`); CFR sections pinned to their actual
