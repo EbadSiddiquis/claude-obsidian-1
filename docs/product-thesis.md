@@ -222,6 +222,16 @@ De-risked before building. Findings:
 
 ## Revision Log
 
+- **v0.13 (2026-06-29):** Added the **506(c)** control set (`controls/reg-d-506c.json`, 15 controls)
+  - the framework now carries a SECOND offering type, proving it's a platform, not one checklist.
+  506(c) flips the constraints: general solicitation permitted, but ALL purchasers accredited and
+  the issuer must take **reasonable steps to verify** (the documentable duty). Two new evaluators
+  (`exemption_is_506c`, `all_accredited_506c`) auto-compute from Form D. Verified live on a real
+  506(c) filer (CIK 2085470): exemption + all-accredited satisfied from public data; the two
+  verification controls surface as the new exemption-fatal items. Reuses the existing authority
+  registry/sovereign/drift/counsel/assumption machinery unchanged. Supports the "better wedge"
+  thesis: 506(c) verification is private but **documentable** (vs 506(b)'s unverifiable
+  no-solicitation), so more of its surface is automatable. `make test` green.
 - **v0.12 (2026-06-29):** Built the **system-assumption meta-node** (authority-model Tier F) -
   the last tier; the model's six tiers are now all implemented. `controls/assumptions.json`
   registers the truths the evaluators rely on: **verifiable** assumptions (executable checks -

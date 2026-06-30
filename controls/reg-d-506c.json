@@ -1,0 +1,113 @@
+{
+  "offering_type": "Rule 506(c)",
+  "surface": "issuer-side private placement with general solicitation",
+  "sovereigns_in_scope": ["federal-sec", "state-blue-sky", "corporate"],
+  "note": "Control framework for a Regulation D Rule 506(c) offering. Differs from 506(b): general solicitation IS permitted, but ALL purchasers must be accredited and the issuer must take 'reasonable steps to verify' accredited status (17 CFR 230.506(c)(2)(ii)) - a documentable duty, which is why more of the 506(c) surface is automatable. No 502(b) information-delivery and no 35-non-accredited ceiling (none allowed at all). Authorities reuse the 230.506 node (506(c) lives in the same section). Template for counsel sign-off, not legal advice.",
+  "controls": [
+    {
+      "id": "exemption_basis_506c",
+      "obligation": "The offering relies on Rule 506(c) (claimed on Form D as '06c').",
+      "authority": "17 CFR 230.506(c)", "authority_refs": ["cfr-230.506"], "sovereign": "federal-sec",
+      "locus": "public", "owner": "issuer", "cadence": "point_in_time", "severity": "informational",
+      "eval": "exemption_is_506c"
+    },
+    {
+      "id": "all_purchasers_accredited",
+      "obligation": "Every purchaser is an accredited investor (no non-accredited purchasers permitted in 506(c)).",
+      "authority": "17 CFR 230.506(c)(2)(i)", "authority_refs": ["cfr-230.506", "cfr-230.501"], "sovereign": "federal-sec",
+      "locus": "hybrid", "owner": "issuer", "cadence": "continuous", "severity": "exemption_fatal",
+      "eval": "all_accredited_506c"
+    },
+    {
+      "id": "reasonable_steps_to_verify",
+      "obligation": "Issuer took reasonable steps to VERIFY each purchaser's accredited status (the defining 506(c) duty).",
+      "authority": "17 CFR 230.506(c)(2)(ii)", "authority_refs": ["cfr-230.506"], "sovereign": "federal-sec",
+      "locus": "private", "owner": "issuer", "cadence": "point_in_time", "severity": "exemption_fatal",
+      "eval": "manual_private"
+    },
+    {
+      "id": "verification_method_documented",
+      "obligation": "Verification used a recognized method/safe harbor (income; net-worth; third-party written confirmation from CPA/attorney/BD/RIA; prior-investor certification; or the high-minimum-investment method) with records retained.",
+      "authority": "17 CFR 230.506(c)(2)(ii)(A)-(D), 230.501(a)", "authority_refs": ["cfr-230.506", "cfr-230.501"], "sovereign": "federal-sec",
+      "locus": "private", "owner": "issuer", "cadence": "point_in_time", "severity": "exemption_fatal",
+      "eval": "manual_private"
+    },
+    {
+      "id": "integration",
+      "obligation": "Offering is not improperly integrated with other offerings (Rule 152 safe harbor).",
+      "authority": "17 CFR 230.502(a), 230.152", "authority_refs": ["cfr-230.502", "cfr-230.152"], "sovereign": "federal-sec",
+      "locus": "hybrid", "owner": "counsel", "cadence": "point_in_time", "severity": "exemption_fatal",
+      "eval": "integration_window"
+    },
+    {
+      "id": "resale_restrictions",
+      "obligation": "Securities are restricted; reasonable care taken to prevent non-exempt resale (legends, etc.).",
+      "authority": "17 CFR 230.502(d)", "authority_refs": ["cfr-230.502"], "sovereign": "federal-sec",
+      "locus": "private", "owner": "issuer", "cadence": "continuous", "severity": "exemption_fatal",
+      "eval": "manual_private"
+    },
+    {
+      "id": "bad_actor_506d",
+      "obligation": "No covered person is subject to a Rule 506(d) disqualifying event.",
+      "authority": "17 CFR 230.506(d)", "authority_refs": ["cfr-230.506"], "sovereign": "federal-sec",
+      "locus": "public", "owner": "counsel", "cadence": "continuous", "severity": "exemption_fatal",
+      "eval": "bad_actor_screen"
+    },
+    {
+      "id": "bad_actor_disclosure_506e",
+      "obligation": "Disclose to purchasers any pre-existing (pre-Sep 23, 2013) bad-actor events.",
+      "authority": "17 CFR 230.506(e)", "authority_refs": ["cfr-230.506"], "sovereign": "federal-sec",
+      "locus": "private", "owner": "counsel", "cadence": "point_in_time", "severity": "exemption_fatal",
+      "eval": "manual_private"
+    },
+    {
+      "id": "form_d_filed",
+      "obligation": "Form D filed with the SEC within 15 days of the first sale.",
+      "authority": "17 CFR 230.503", "authority_refs": ["cfr-230.503"], "sovereign": "federal-sec",
+      "locus": "hybrid", "owner": "issuer", "cadence": "point_in_time", "severity": "curable_procedural",
+      "eval": "form_d_filed"
+    },
+    {
+      "id": "form_d_amendments",
+      "obligation": "Form D amended annually and on material changes while the offering is ongoing.",
+      "authority": "17 CFR 230.503(a)", "authority_refs": ["cfr-230.503"], "sovereign": "federal-sec",
+      "locus": "hybrid", "owner": "issuer", "cadence": "continuous", "severity": "curable_procedural",
+      "eval": "manual_continuous"
+    },
+    {
+      "id": "state_blue_sky_notice",
+      "obligation": "File state notice + fee where purchasers reside (506 = covered securities; states limited to notice).",
+      "authority": "15 U.S.C. 77r (Section 18) + applicable state law", "authority_refs": ["statute-secact-18", "state-bluesky-notice"], "sovereign": "state-blue-sky",
+      "locus": "private", "owner": "issuer", "cadence": "point_in_time", "severity": "curable_procedural",
+      "eval": "manual_private"
+    },
+    {
+      "id": "rule_507_not_disqualified",
+      "obligation": "Issuer is not subject to a Rule 507 disqualification (prior Form D injunction).",
+      "authority": "17 CFR 230.507", "authority_refs": ["cfr-230.507"], "sovereign": "federal-sec",
+      "locus": "public", "owner": "counsel", "cadence": "point_in_time", "severity": "exemption_fatal",
+      "eval": "manual_runnable"
+    },
+    {
+      "id": "amount_reconciliation",
+      "obligation": "Form D amounts (offered / sold) reconcile with the cap table and subscription records.",
+      "authority": "reconciliation (Form D vs internal records)", "authority_refs": [], "sovereign": "federal-sec",
+      "locus": "hybrid", "owner": "issuer", "cadence": "point_in_time", "severity": "curable_procedural",
+      "eval": "amount_reconciliation"
+    },
+    {
+      "id": "corp_valid_authorization",
+      "obligation": "Securities are duly authorized and validly issued (board + any required stockholder approval; sufficient authorized shares).",
+      "authority": "state corporate law (e.g., DGCL 151-161) + charter/bylaws", "authority_refs": ["state-corp-dgcl"], "sovereign": "corporate",
+      "locus": "private", "owner": "counsel", "cadence": "point_in_time", "severity": "exemption_fatal",
+      "eval": "manual_private"
+    },
+    {
+      "id": "corp_subscription_enforceable",
+      "obligation": "Subscription agreements are duly executed and enforceable; the entity is in good standing.",
+      "authority": "state corporate law + contract", "authority_refs": ["state-corp-dgcl"], "sovereign": "corporate",
+      "locus": "private", "owner": "issuer", "cadence": "point_in_time", "severity": "curable_procedural",
+      "eval": "manual_private"
+    }
+  ]
+}

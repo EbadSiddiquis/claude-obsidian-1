@@ -53,6 +53,22 @@ def evaluate(control, fd, ctx):
             return "escalate_to_counsel", [f"Form D = {ex}"], "Form D claims 506(c), not 506(b) - wrong control set? Confirm with counsel."
         return "open", [f"Form D = {ex}"], "Rule 506(b) not clearly claimed on Form D; confirm the exemption relied upon."
 
+    if key == "exemption_is_506c":
+        ex = fd.get("exemptions") or []
+        if "06c" in ex:
+            return "satisfied", [f"Form D federalExemptionsExclusions = {ex}"], "Form D claims Rule 506(c) [06c]."
+        if "06b" in ex:
+            return "escalate_to_counsel", [f"Form D = {ex}"], "Form D claims 506(b), not 506(c) - wrong control set? Confirm with counsel."
+        return "open", [f"Form D = {ex}"], "Rule 506(c) not clearly claimed on Form D; confirm the exemption relied upon."
+
+    if key == "all_accredited_506c":
+        na = fd.get("has_non_accredited")
+        if na is False:
+            return "satisfied", ["Form D: hasNonAccreditedInvestors = false"], "Form D reports 0 non-accredited purchasers, consistent with 506(c)'s all-accredited requirement (counsel confirms reliance)."
+        if na is True:
+            return "escalate_to_counsel", ["Form D: hasNonAccreditedInvestors = true"], "Form D reports non-accredited purchasers - INCOMPATIBLE with 506(c) (all purchasers must be accredited). Counsel assesses."
+        return "open", [], "Non-accredited status not determinable from Form D; confirm all purchasers accredited (private)."
+
     if key == "nonaccredited_ceiling":
         na = fd.get("has_non_accredited")
         if na is False:
