@@ -222,6 +222,19 @@ De-risked before building. Findings:
 
 ## Revision Log
 
+- **v0.7 (2026-06-29):** Architecture pressure-test produced a typed AUTHORITY MODEL
+  ([authority-model.md](authority-model.md)). Key sharpenings that revise this thesis:
+  (1) authority is a typed graph node with provenance as an edge, not a citation string;
+  (2) add a **sovereign axis** (Federal-SEC / FINRA / State blue-sky ×50 / money-transmission /
+  corporate) - the original spine was single-sovereign and silently under-covers;
+  (3) "binding" != "codified" (exemptive orders / releases / FINRA member rules are binding, often
+  not in the CFR); (4) interpretive guidance (C&DIs, no-action, FINRA notices) is an *edge* on the
+  rule it interprets, never a root; (5) the named-counsel node is the terminal, decaying authority
+  and must be modeled as such; (6) the system's own design assumptions are a monitored authority
+  class (system correctness). Conflict model: hierarchical=auto, cumulative=union, genuine
+  tension=escalate. Drift unified as version-change propagation along edges. Honest reframe: the
+  automatable fraction is bounded by public-vs-private locus, not authority -> 506(c)/Reg A may be
+  the better wedge than 506(b).
 - **v0.6 (2026-06-29):** Wired the `integration` control from a stub into a real public-data
   auto-check (the issuer's other EDGAR offering-type filings within a ~6-month window, via
   `edgar_formd.list_filings` + `OFFERING_FORMS`) - still never "satisfied" (integration is a
