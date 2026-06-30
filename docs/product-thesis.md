@@ -226,18 +226,26 @@ De-risked before building. Findings:
   stub to live. `scripts/edgar_formd.py` now drives BOTH Form D and Form C (`load_form_c` /
   `parse_form_c`, identical envelope shape), and `control-panel.py` dispatches on a framework's
   new `driver` field. `controls/reg-cf-funding-portal.json` now evaluates against a real Form C:
-  the public-side legs compute (Form C on file → `satisfied`; offering max vs the $5M **rolling
-  12-month** Reg CF cap → `open`, because an aggregate can't be concluded from one filing; the
-  single named intermediary by CIK + CRD + `007-` funding-portal file number → feeds the
-  FINRA-membership check; signature persons → the 227.503 bad-actor screen), while FINRA-conduct,
-  fund-custody, and state legs resolve to `open`/`escalate`. This is the first time the **FINRA**
+  the public-side legs compute (Form C existence on EDGAR → `cf_form_c_filed`, kept `open` not
+  `satisfied` because the obligation is multi-part — filed *before commencement* + annual C-AR —
+  and only existence is a verified public fact, mirroring the Form D `form_d_filed` precedent;
+  offering max vs the $5M **rolling 12-month** Reg CF cap → `open`, because an aggregate can't be
+  concluded from one filing; the single named intermediary by CIK + CRD + `007-` funding-portal
+  file number → feeds the FINRA-membership check; signature persons → the 227.503 bad-actor
+  screen), while FINRA-conduct, fund-custody, and state legs resolve to `open`/`escalate`. The
+  panel draws 0 conclusions. This is the first time the **FINRA**
   and **money-transmission** sovereigns are exercised end-to-end (0 coverage gaps), proving the
   multi-sovereign authority model is real and not Federal-SEC-only. Confirms the "better wedge"
   reasoning from another angle: like 506(c)'s documentable verification, Reg CF's surface is
   unusually public (the intermediary, cap, and filing are all on EDGAR), so more of it automates
   cleanly. Verified live on CIK 2140631 (20Slash20, Inc. via Mr. Crowd); Form D path
-  regression-clean; `make test` green. Gotcha captured (Form C `primaryDocument` =
-  `xslC_X01/primary_doc.xml`, raw XML is the prefix-stripped sibling) in code + CHANGELOG.
+  regression-clean; `make test` green (a new hermetic `tests/test_edgar_formc.py` feeds canned
+  Form C XML through the parser + every CF evaluator, asserting the never-opine invariant offline).
+  Gotcha captured (Form C `primaryDocument` = `xslC_X01/primary_doc.xml`, raw XML is the
+  prefix-stripped sibling) in code + CHANGELOG. **The pre-commit verifier earned its keep here:**
+  it flagged that the first cut marked `cf_form_c_filed` `satisfied` on a multi-part exemption-fatal
+  obligation when only one leg was verified — a quiet never-opine softening — which was corrected to
+  `open` before the work settled. That is the assemble-don't-opine discipline catching itself.
 - **v0.13 (2026-06-29):** Added the **506(c)** control set (`controls/reg-d-506c.json`, 15 controls)
   - the framework now carries a SECOND offering type, proving it's a platform, not one checklist.
   506(c) flips the constraints: general solicitation permitted, but ALL purchasers accredited and
