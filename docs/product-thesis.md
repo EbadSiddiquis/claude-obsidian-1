@@ -222,6 +222,14 @@ De-risked before building. Findings:
 
 ## Revision Log
 
+- **v0.6 (2026-06-29):** Wired the `integration` control from a stub into a real public-data
+  auto-check (the issuer's other EDGAR offering-type filings within a ~6-month window, via
+  `edgar_formd.list_filings` + `OFFERING_FORMS`) - still never "satisfied" (integration is a
+  legal judgment), but now evidenced/flagged from data. Added a self-contained **HTML
+  counsel-ready report** renderer (`control-panel.py --html`): badged states, the
+  exemption-fatal urgent box, a "draws no legal conclusions" banner, citations + axes per
+  control. Verified live; `make test` green. This is the first artifact in the shape a lawyer
+  actually consumes (Loop 4, the counsel-ready record).
 - **v0.5 (2026-06-29):** Shipped the first counsel-ready CONTROL PANEL. The §506(b) control
   framework now exists as data (`controls/reg-d-506b.json`, 14 atoms derived from 17 CFR
   230.501-503 / 506(b)(d)(e), each with authority + the five axes). `scripts/control-panel.py`

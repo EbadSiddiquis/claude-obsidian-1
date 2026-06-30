@@ -4,7 +4,7 @@ Used by screen-offering.py and control-panel.py. Keeps the EDGAR gotchas in ONE 
   - submissions' primaryDocument for Form D points at the XSLT-rendered HTML
     ("xslFormDX08/primary_doc.xml"); the raw structured XML is the same filename without the
     styling-dir prefix.
-  - the AP feed / sec.gov require a compliant User-Agent -> we go through scripts/sec-fetch.sh.
+  - sec.gov / data.sec.gov require a compliant User-Agent -> we go through scripts/sec-fetch.sh.
 """
 import json
 import os
@@ -13,6 +13,10 @@ import sys
 import xml.etree.ElementTree as ET
 
 HERE = os.path.dirname(os.path.abspath(__file__))
+
+# EDGAR form types that represent a securities OFFERING (used for the integration window check).
+OFFERING_FORMS = {"D", "D/A", "1-A", "1-A/A", "1-A POS", "S-1", "S-1/A", "C", "C/A", "C-U",
+                  "253G1", "253G2", "253G3", "S-3", "S-3/A"}
 
 
 def sec_fetch(url: str) -> str:
@@ -23,16 +27,24 @@ def sec_fetch(url: str) -> str:
     return out.stdout
 
 
-def latest_form_d(cik: str):
-    """(issuer_name, accession, raw_doc_filename) for the most recent Form D, or exit if none."""
+def fetch_submissions(cik: str) -> dict:
     cik10 = str(int(cik)).zfill(10)
-    data = json.loads(sec_fetch(f"https://data.sec.gov/submissions/CIK{cik10}.json"))
-    issuer = data.get("name", f"CIK {cik}")
-    r = data["filings"]["recent"]
+    return json.loads(sec_fetch(f"https://data.sec.gov/submissions/CIK{cik10}.json"))
+
+
+def list_filings(subs: dict) -> list:
+    """[{form, date, accession}] for the issuer's recent filings."""
+    r = subs["filings"]["recent"]
+    return [{"form": f, "date": d, "accession": a}
+            for f, d, a in zip(r["form"], r["filingDate"], r["accessionNumber"])]
+
+
+def _pick_form_d(subs: dict):
+    r = subs["filings"]["recent"]
     for form, acc, doc in zip(r["form"], r["accessionNumber"], r["primaryDocument"]):
         if form == "D":
-            return issuer, acc, (doc.split("/")[-1] or "primary_doc.xml")
-    sys.exit(f"no Form D found for CIK {cik} (issuer: {issuer})")
+            return acc, (doc.split("/")[-1] or "primary_doc.xml")
+    return None
 
 
 def fetch_form_d_xml(cik: str, accession: str, raw_doc: str) -> str:
@@ -77,7 +89,6 @@ def parse_form_d(xml: str) -> dict:
                   if _ln(el.tag) == "item" and (el.text or "").strip()]
 
     has_na = _first_text(root, "hasNonAccreditedInvestors")
-    # dateOfFirstSale is either a <value> child or a <yetToOccur> flag
     first_sale = None
     for node in root.iter():
         if _ln(node.tag) == "dateOfFirstSale":
@@ -98,9 +109,16 @@ def parse_form_d(xml: str) -> dict:
 
 
 def load_form_d(cik: str) -> dict:
-    """One call: CIK -> {accession, ...parsed fields}."""
-    issuer, accession, raw_doc = latest_form_d(cik)
+    """One call: CIK -> {issuer, accession, parsed fields, all_filings, filing_date}."""
+    subs = fetch_submissions(cik)
+    issuer = subs.get("name", f"CIK {cik}")
+    picked = _pick_form_d(subs)
+    if not picked:
+        sys.exit(f"no Form D found for CIK {cik} (issuer: {issuer})")
+    accession, raw_doc = picked
     data = parse_form_d(fetch_form_d_xml(cik, accession, raw_doc))
     data["accession"] = accession
     data["issuer"] = data.get("issuer") or issuer
+    data["all_filings"] = list_filings(subs)
+    data["filing_date"] = next((f["date"] for f in data["all_filings"] if f["accession"] == accession), None)
     return data

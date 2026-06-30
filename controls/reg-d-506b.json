@@ -42,7 +42,7 @@
       "obligation": "Offering is not improperly integrated with other offerings (Rule 152 safe harbor).",
       "authority": "17 CFR 230.502(a), 230.152",
       "locus": "hybrid", "owner": "counsel", "cadence": "point_in_time", "severity": "exemption_fatal",
-      "eval": "manual_hybrid"
+      "eval": "integration_window"
     },
     {
       "id": "resale_restrictions",
