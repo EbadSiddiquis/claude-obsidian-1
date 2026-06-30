@@ -28,6 +28,7 @@ import edgar_formd as efd
 HERE = os.path.dirname(os.path.abspath(__file__))
 UA = os.environ.get("EDGAR_USER_AGENT", "claude-obsidian-research " + os.environ.get("SEC_CONTACT_EMAIL", "set-SEC_CONTACT_EMAIL@example.com"))
 REF_CIK = "2141182"  # a stable filer with a Form D, used as the self-test fixture
+REF_FORMC_CIK = "2140631"  # 20Slash20, Inc. - a stable Form C filer (via the Mr. Crowd portal)
 REF_PORTAL_CIK = "1666102"  # Ksdaq Inc. / Mr. Crowd - a stable funding portal (CFPORTAL since 2016), file 007-00042
 
 # finra-portal-check has a hyphenated filename -> load it by path to reuse its real fetch+parse.
@@ -51,6 +52,10 @@ def _ctx():
         ctx["fd"] = efd.load_form_d(REF_CIK)
     except SystemExit as e:
         ctx["fd_error"] = str(e)
+    try:
+        ctx["fc"] = efd.load_form_c(REF_FORMC_CIK)
+    except SystemExit as e:
+        ctx["fc_error"] = str(e)
     return ctx
 
 
@@ -78,6 +83,26 @@ def _formd_fields(ctx):
         return None, "could not load reference Form D"
     ok = bool(fd.get("related_persons")) and fd.get("has_non_accredited") is not None and bool(fd.get("date_of_first_sale"))
     return ok, f"related_persons={len(fd.get('related_persons') or [])} has_non_accredited={fd.get('has_non_accredited')} first_sale={fd.get('date_of_first_sale')}"
+
+
+@check("formc_raw_xml")
+def _formc_raw_xml(ctx):
+    fc = ctx.get("fc")
+    if not fc:
+        return None, "could not load reference Form C"
+    ok = bool(fc.get("issuer")) and bool(fc.get("intermediary_cik"))
+    return ok, f"issuer={fc.get('issuer')!r} intermediary_cik={fc.get('intermediary_cik')}"
+
+
+@check("formc_fields")
+def _formc_fields(ctx):
+    fc = ctx.get("fc")
+    if not fc:
+        return None, "could not load reference Form C"
+    ok = (bool(fc.get("intermediary_file_number")) and fc.get("maximum_offering_amount") is not None
+          and bool(fc.get("state_jurisdictions")) and bool(fc.get("related_persons")))
+    return ok, (f"file_number={fc.get('intermediary_file_number')} max={fc.get('maximum_offering_amount')} "
+                f"states={len(fc.get('state_jurisdictions') or [])} signers={len(fc.get('related_persons') or [])}")
 
 
 @check("exemption_code_06b")

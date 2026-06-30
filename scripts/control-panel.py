@@ -1,16 +1,18 @@
 #!/usr/bin/env python3
-"""control-panel.py - render the §506(b) counsel-ready control panel for a CIK.
+"""control-panel.py - render a counsel-ready control panel for a CIK (multi-framework).
 
-Reads the control framework (controls/reg-d-506b.json), loads the issuer's Form D, computes
-each control's state from public data where possible, marks the rest honestly, and renders the
-whole checklist (text or self-contained HTML).
+Reads a control framework JSON (default controls/reg-d-506b.json; pass --framework for Rule
+506(c) or the Reg CF funding-portal set), loads the issuer's driving filing (Form D or, when the
+framework declares `driver: form_c`, Form C), computes each control's state from public data where
+possible, marks the rest honestly, and renders the whole checklist (text or self-contained HTML).
 
 THE DISCIPLINE: assembles and flags; never concludes. Each control resolves to
 satisfied / open / escalate_to_counsel / n/a with a citation and a note. Counsel opines.
 
 USAGE
   export SEC_CONTACT_EMAIL="you@example.com"
-  python3 scripts/control-panel.py --cik 2141182
+  python3 scripts/control-panel.py --cik 2141182                                            # Rule 506(b) (default)
+  python3 scripts/control-panel.py --cik 2140631 --framework controls/reg-cf-funding-portal.json  # Reg CF
   python3 scripts/control-panel.py --cik 2141182 --json
   python3 scripts/control-panel.py --cik 2141182 --html /tmp/panel.html
 """
@@ -536,7 +538,7 @@ require issuer evidence. This panel never concludes; counsel opines.</p>
 
 
 def main():
-    ap = argparse.ArgumentParser(description="Render the Rule 506(b) counsel-ready control panel for a CIK (never-opine).")
+    ap = argparse.ArgumentParser(description="Render a counsel-ready control panel for a CIK; --framework selects the offering type (default Rule 506(b); also 506(c) / Reg CF funding-portal). Never-opine.")
     ap.add_argument("--cik", required=True)
     ap.add_argument("--framework", default=CONTROLS, help="control framework JSON (default: reg-d-506b.json)")
     ap.add_argument("--opinions", metavar="PATH", help="opinions-of-record JSON (named-counsel node)")

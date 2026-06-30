@@ -1,5 +1,5 @@
 {
-  "note": "System-assumption meta-node (authority-model Tier F): the truths the EVALUATORS rely on. A wrong assumption silently flips a control's state, so we model assumptions as first-class, monitored nodes. kind 'verifiable' has an executable check (holds/VIOLATED); kind 'accepted' is a known limitation/heuristic surfaced so it is never forgotten (not auto-checkable). affects_controls links an assumption to the controls it could corrupt ('*' = all Form-D-driven controls).",
+  "note": "System-assumption meta-node (authority-model Tier F): the truths the EVALUATORS rely on. A wrong assumption silently flips a control's state, so we model assumptions as first-class, monitored nodes. kind 'verifiable' has an executable check (holds/VIOLATED); kind 'accepted' is a known limitation/heuristic surfaced so it is never forgotten (not auto-checkable). affects_controls links an assumption to the controls it could corrupt ('*' = all Form-D-driven controls ONLY; Form-C-driven controls are listed explicitly, never matched by '*').",
   "assumptions": [
     {
       "id": "asm-formd-raw-xml",
@@ -18,6 +18,33 @@
       "risk_if_wrong": "A field rename empties an evaluator input -> control silently flips to open/wrong.",
       "check": "formd_fields",
       "affects_controls": ["nonaccredited_ceiling", "info_delivery_if_nonaccredited", "form_d_filed", "amount_reconciliation", "bad_actor_506d"]
+    },
+    {
+      "id": "asm-formc-raw-xml",
+      "kind": "verifiable",
+      "statement": "EDGAR Form C structured XML is at primary_doc.xml (strip the xslC_X01/ styling-dir prefix from submissions' primaryDocument); nameOfIssuer + commissionCik resolve.",
+      "used_by": "edgar_formd.load_form_c / list_form_c_intermediaries",
+      "risk_if_wrong": "Form C parse fails or yields the rendered HTML -> the driver of the WHOLE funding-portal framework silently breaks (every issuer-side control wrong).",
+      "check": "formc_raw_xml",
+      "affects_controls": ["cf_aggregate_cap", "cf_form_c_filed", "cf_single_intermediary", "cf_state_notice", "cf_bad_actor_503"]
+    },
+    {
+      "id": "asm-formc-fields",
+      "kind": "verifiable",
+      "statement": "Form C field localnames are stable: nameOfIssuer, companyName, commissionCik/commissionFileNumber/crdNumber, offeringAmount/maximumOfferingAmount, issueJurisdictionSecuritiesOffering, signaturePerson, deadlineDate.",
+      "used_by": "edgar_formd.parse_form_c",
+      "risk_if_wrong": "A field rename empties an evaluator input -> cf_cap / cf_single_intermediary / cf_state_notice / the issuer-side bad-actor screen silently flip with no drift signal.",
+      "check": "formc_fields",
+      "affects_controls": ["cf_aggregate_cap", "cf_single_intermediary", "cf_state_notice", "cf_bad_actor_503"]
+    },
+    {
+      "id": "asm-formc-filing-timing",
+      "kind": "accepted",
+      "statement": "cf_form_c_filed verifies only that a Form C EXISTS on EDGAR; the 'filed before the offering commenced' timing and the continuous Form C-AR legs are not publicly verifiable.",
+      "used_by": "control-panel.evaluate:cf_form_c_filed",
+      "risk_if_wrong": "Existence could be read as a clearance. Mitigated: the control stays open and the note says 'NOT a clearance' - this registers that limitation as a first-class monitored caveat (parity with asm-badactor-rolling-window).",
+      "check": null,
+      "affects_controls": ["cf_form_c_filed"]
     },
     {
       "id": "asm-exemption-code-06b",

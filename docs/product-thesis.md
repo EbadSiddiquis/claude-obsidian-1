@@ -222,6 +222,22 @@ De-risked before building. Findings:
 
 ## Revision Log
 
+- **v0.20 (2026-06-30):** **Consolidation freeze** of the Reg CF funding-portal control set. After
+  building all nine controls across four sovereigns incrementally (each diff adversarially verified),
+  ran a *holistic* audit of the whole set as one artifact - the cross-cutting view that diff-by-diff
+  review structurally can't give. Verdict: no blocker, "largely mature and holistically sound"
+  (consistent verdict semantics; `satisfied` reached only by the one pure two-public-register control;
+  no never-opine leaks across the boundary cases; authority nodes all resolve; defensive ctx/fd
+  contracts). It found one real cross-cutting gap that every incremental pass missed: the Form C
+  *driver* of the entire framework had no Tier-F self-check, while the Form D driver did - so a silent
+  EDGAR schema change would have flipped four controls with no drift signal. Closed it
+  (`asm-formc-raw-xml` / `-fields`, live-checked) plus consistency items (registered the
+  cf_form_c_filed timing limitation as a first-class caveat; clarified the assumption-wildcard scope;
+  de-506(b)-ified the shared panel's user-facing strings). The lesson for the method: incremental
+  adversarial verification catches local defects, but a periodic whole-artifact audit is a distinct
+  and necessary check - the driver-has-no-self-check hole is invisible from any single diff. The
+  funding-portal surface is now frozen as a baseline: every control public-data-driven except the one
+  honestly-private FINRA-internal filing.
 - **v0.19 (2026-06-30):** Refined the **state-notice** leg (`cf_state_notice`) by surfacing the
   Section 18(b)(4)(C) **covered-securities preemption** as a public legal fact: Reg CF securities
   preempt state registration/qualification, so the state surface collapses to residual notice filings

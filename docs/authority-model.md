@@ -4,7 +4,7 @@ Companion to [product-thesis.md](product-thesis.md). Pressure-tests the source-o
 The premise: every load-bearing claim traces to an authoritative source or a named human
 authority. This doc designs the *model*, not a source list.
 
-> Status: v0.6 (2026-06-30). Captured from an architecture pressure-test. Refine per the
+> Status: v0.7 (2026-06-30). Captured from an architecture pressure-test. Refine per the
 > thesis Self-Refinement Protocol.
 
 ## The core correction
@@ -59,6 +59,14 @@ carries *operational expectation*, never the legal conclusion.
 - **Cumulative (different sovereigns):** Federal + FINRA + State + MTL are a *set to satisfy*,
   not a conflict. Union the obligations; never let one sovereign "win." (Why multi-sovereign
   must be modeled: most "conflicts" are cumulative duties a single-sovereign spine silently drops.)
+  *Corollary (intentional, not a bug):* one upstream fact can legitimately escalate several
+  controls across several sovereigns - e.g. a funding-portal `CFPORTAL-W` withdrawal flags
+  `portal_finra_member` (FINRA), `funds_qualified_third_party` (money-transmission), and
+  `portal_prohibited_conduct` (FINRA conduct) at once. That is the cumulative model working: each
+  sovereign's obligation genuinely fails, and counsel must address each. The controls cross-reference
+  the shared root in their evidence ("see funds_qualified_third_party / portal_finra_member") rather
+  than collapsing the count - we surface the coupling, we don't hide a real multi-sovereign failure
+  behind a dedup.
 - **Genuine interpretive tension:** a C&DI narrows a rule; a no-action letter cuts against text
   -> NEVER auto-resolved -> `escalate_to_counsel` with both authorities surfaced and the tension
   named.
@@ -119,7 +127,11 @@ the better wedge.
 - **System-assumption meta-node:** implemented (v0.12) - `controls/assumptions.json` +
   `scripts/assumption-check.py`. Verifiable assumptions are checked against live data; a VIOLATED
   check flags the controls it could corrupt; accepted limitations are surfaced on dependent
-  controls in the panel. **All six tiers are now implemented.**
+  controls in the panel. **All six tiers are now implemented.** Extended (v0.7, holistic-audit
+  follow-up) to cover the Form C driver of the whole funding-portal framework: `asm-formc-raw-xml`
+  + `asm-formc-fields` (verifiable, live-checked) close the gap where the framework's driving filing
+  was the one input with no self-check; `asm-formc-filing-timing` (accepted) registers the
+  cf_form_c_filed existence-only limitation as a first-class caveat. Registry: 17 nodes.
 - **Funding-portal surface live (multi-sovereign proof):** implemented (v0.14) - `controls/reg-cf-funding-portal.json`
   now declares `driver: form_c` and evaluates against a real Form C via `edgar_formd.load_form_c` +
   `control-panel.py`'s driver dispatch. This is the first surface that exercises the **FINRA** and
@@ -157,6 +169,10 @@ the better wedge.
   and portal-conduct *disclosure* checks above, which are now live.
 
 ## Revision Log
+- **v0.7 (2026-06-30):** Consolidation freeze of the funding-portal set: a holistic (whole-artifact,
+  not per-diff) audit found the framework's Form C driver had no Tier-F self-check while Form D did;
+  added `asm-formc-raw-xml` / `asm-formc-fields` (live-checked) + `asm-formc-filing-timing` (accepted),
+  and documented the multi-sovereign shared-cause escalation as intentional (cumulative duties).
 - **v0.6 (2026-06-30):** Portal prohibited-conduct evidenced from the Form Funding Portal
   (funds-handling cross-ref + FP Rule 200 disclosure scan), with a never-opine boundary case:
   compensation surfaced, not flagged (transaction-based comp is permitted to portals).
