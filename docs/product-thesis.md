@@ -222,6 +222,22 @@ De-risked before building. Findings:
 
 ## Revision Log
 
+- **v0.14 (2026-06-30):** Shipped the **Form C driver** — the funding-portal surface goes from
+  stub to live. `scripts/edgar_formd.py` now drives BOTH Form D and Form C (`load_form_c` /
+  `parse_form_c`, identical envelope shape), and `control-panel.py` dispatches on a framework's
+  new `driver` field. `controls/reg-cf-funding-portal.json` now evaluates against a real Form C:
+  the public-side legs compute (Form C on file → `satisfied`; offering max vs the $5M **rolling
+  12-month** Reg CF cap → `open`, because an aggregate can't be concluded from one filing; the
+  single named intermediary by CIK + CRD + `007-` funding-portal file number → feeds the
+  FINRA-membership check; signature persons → the 227.503 bad-actor screen), while FINRA-conduct,
+  fund-custody, and state legs resolve to `open`/`escalate`. This is the first time the **FINRA**
+  and **money-transmission** sovereigns are exercised end-to-end (0 coverage gaps), proving the
+  multi-sovereign authority model is real and not Federal-SEC-only. Confirms the "better wedge"
+  reasoning from another angle: like 506(c)'s documentable verification, Reg CF's surface is
+  unusually public (the intermediary, cap, and filing are all on EDGAR), so more of it automates
+  cleanly. Verified live on CIK 2140631 (20Slash20, Inc. via Mr. Crowd); Form D path
+  regression-clean; `make test` green. Gotcha captured (Form C `primaryDocument` =
+  `xslC_X01/primary_doc.xml`, raw XML is the prefix-stripped sibling) in code + CHANGELOG.
 - **v0.13 (2026-06-29):** Added the **506(c)** control set (`controls/reg-d-506c.json`, 15 controls)
   - the framework now carries a SECOND offering type, proving it's a platform, not one checklist.
   506(c) flips the constraints: general solicitation permitted, but ALL purchasers accredited and

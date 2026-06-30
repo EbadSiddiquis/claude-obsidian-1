@@ -122,6 +122,40 @@ def evaluate(control, fd, ctx):
         ev = [f"Form D offered: {fd.get('total_offering_amount')}", f"sold: {fd.get('total_sold')}", f"remaining: {fd.get('total_remaining')}"]
         return "open", ev, "Reconcile these Form D amounts against the cap table / subscription records (private)."
 
+    # --- Regulation Crowdfunding (Form C driver) evaluators ---
+    if key == "cf_cap":
+        cap = 5_000_000
+        tgt, mx = fd.get("offering_amount"), fd.get("maximum_offering_amount")
+        ev = [f"Form C target (offeringAmount): {tgt}", f"Form C maximum (maximumOfferingAmount): {mx}"]
+        try:
+            mxf = float(mx) if mx is not None else None
+        except ValueError:
+            mxf = None
+        if mxf is not None and mxf > cap:
+            return "escalate_to_counsel", ev, "This Form C's maximum EXCEEDS the $5,000,000 Reg CF ceiling - assess (counsel)."
+        if mxf is not None:
+            return "open", ev, ("This offering's maximum is within the $5,000,000 ceiling, but the Reg CF cap is a "
+                                "ROLLING 12-month AGGREGATE across all of the issuer's Reg CF raises - reconcile against any "
+                                "other Reg CF offerings in the trailing 12 months (private). Not a clearance; counsel confirms.")
+        return "open", ev, "Maximum offering amount not determinable from Form C; confirm vs the $5M rolling 12-month cap."
+
+    if key == "cf_form_c_filed":
+        return "satisfied", [f"Form {fd.get('form_type', 'C')} on EDGAR: accession {fd.get('accession')} (filed {fd.get('filing_date')})"], \
+            ("Form C is on file with the SEC (public fact). Confirm it preceded the offering's commencement, and that "
+             "Form C-AR annual reports are filed while the reporting obligation runs (continuous).")
+
+    if key == "cf_intermediary":
+        nm, icik = fd.get("intermediary_name"), fd.get("intermediary_cik")
+        crd, fno = fd.get("intermediary_crd"), fd.get("intermediary_file_number")
+        ev = [f"intermediary: {nm}", f"intermediary CIK: {icik}", f"file number: {fno}", f"CRD: {crd}"]
+        portal = bool(fno and str(fno).startswith("007-"))
+        if nm and (fno or crd):
+            note = ("Form C names a single intermediary" + (" with a funding-portal file number (007- prefix)" if portal else "") +
+                    " / CRD - verify CURRENT FINRA membership + funding-portal registration against FINRA's funding-portal list "
+                    "(runnable; not yet wired). Counsel confirms.")
+            return "open", ev, note
+        return "open", ev, "Intermediary identity not fully determinable from Form C; confirm a registered portal/BD."
+
     if key == "manual_runnable":
         return "open", [], "Runnable against court-order / enforcement data; not yet wired."
     if key == "manual_continuous":
@@ -147,10 +181,19 @@ def sovereign_coverage(framework, rows):
     }
 
 
+# A framework declares which EDGAR offering form drives it. Form D -> Reg D (506(b)/(c));
+# Form C -> Reg CF funding-portal raises. Both loaders return the same envelope shape.
+DRIVERS = {"form_d": efd.load_form_d, "form_c": efd.load_form_c}
+
+
 def build(cik, framework_path=CONTROLS, opinions_path=None):
     framework = json.load(open(framework_path, encoding="utf-8"))
-    fd = efd.load_form_d(cik)
-    watchlist = [fd["issuer"]] + [p["name"] for p in fd["related_persons"]]
+    driver = framework.get("driver", "form_d")
+    loader = DRIVERS.get(driver)
+    if not loader:
+        sys.exit(f"unknown framework driver '{driver}' (known: {', '.join(DRIVERS)})")
+    fd = loader(cik)
+    watchlist = [fd["issuer"]] + [p["name"] for p in fd.get("related_persons", [])]
     ctx = {"watchlist": watchlist, "badactor": run_badactor(watchlist)}
     registry = areg.load_registry()
     assumptions = asm_reg.load_assumptions()
@@ -220,7 +263,7 @@ def render_html(framework, fd, rows, counts, urgent, coverage, cik):
 open items and judgment calls for counsel. Outputs are <i>satisfied / open / escalate to counsel / n/a</i>
 &mdash; never &ldquo;compliant&rdquo; or &ldquo;exemption available.&rdquo; Counsel opines.</div>
 <h1 style="margin:18px 0 2px">Counsel-Ready Control Panel</h1>
-<div style="color:#555">{e(framework['offering_type'])} &middot; <b>{e(fd['issuer'])}</b> &middot; CIK {int(cik)} &middot; Form D {e(fd.get('accession') or '')} (filed {e(fd.get('filing_date') or '?')})</div>
+<div style="color:#555">{e(framework['offering_type'])} &middot; <b>{e(fd['issuer'])}</b> &middot; CIK {int(cik)} &middot; Form {e(fd.get('form_type') or 'D')} {e(fd.get('accession') or '')} (filed {e(fd.get('filing_date') or '?')})</div>
 <p style="font-size:14px">{summary}</p>
 <div style="background:#ffebe9;border:1px solid #ff818266;border-radius:6px;padding:10px 14px">
 <b>Urgent &mdash; exemption-fatal, not yet satisfied ({len(urgent)})</b>
@@ -262,7 +305,7 @@ def main():
 
     MARK = {"satisfied": "OK ", "open": "open", "escalate_to_counsel": "FLAG->counsel", "n/a": "n/a ",
             "satisfied_by_counsel": "BY COUNSEL"}
-    print(f"Counsel-ready control panel | {framework['offering_type']} | {fd['issuer']} | CIK {int(args.cik)} | Form D {fd.get('accession')}")
+    print(f"Counsel-ready control panel | {framework['offering_type']} | {fd['issuer']} | CIK {int(args.cik)} | Form {fd.get('form_type') or 'D'} {fd.get('accession')}")
     print(" · ".join(f"{k}: {v}" for k, v in sorted(counts.items())) + " · conclusions drawn by the system: 0\n")
     for r in rows:
         print(f"[{MARK[r['state']]:>13}] {r['id']}  [{r.get('sovereign','?')}] ({r['severity']}, {r['locus']}, owner={r['owner']})")

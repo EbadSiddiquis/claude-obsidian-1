@@ -1,10 +1,15 @@
-"""edgar_formd.py - shared Form D access + parse (importable; underscore name on purpose).
+"""edgar_formd.py - shared EDGAR offering-form access + parse (importable; underscore name on purpose).
 
 Used by screen-offering.py and control-panel.py. Keeps the EDGAR gotchas in ONE place:
-  - submissions' primaryDocument for Form D points at the XSLT-rendered HTML
-    ("xslFormDX08/primary_doc.xml"); the raw structured XML is the same filename without the
-    styling-dir prefix.
+  - submissions' primaryDocument points at the XSLT-rendered HTML (Form D: "xslFormDX08/primary_doc.xml";
+    Form C: "xslC_X01/primary_doc.xml"); the raw structured XML is the same filename without the
+    styling-dir prefix (split off via doc.split("/")[-1]).
   - sec.gov / data.sec.gov require a compliant User-Agent -> we go through scripts/sec-fetch.sh.
+
+Despite the file name, this module now drives BOTH Form D (Reg D 506(b)/(c)) and Form C (Reg CF /
+Section 4(a)(6) funding-portal raises). load_form_d / load_form_c return the same envelope shape
+(issuer, accession, related_persons, all_filings, filing_date) so a single control panel can
+dispatch on a framework's `driver` field without special-casing the consumer.
 """
 import json
 import os
@@ -47,9 +52,14 @@ def _pick_form_d(subs: dict):
     return None
 
 
-def fetch_form_d_xml(cik: str, accession: str, raw_doc: str) -> str:
+def fetch_archive_doc(cik: str, accession: str, raw_doc: str) -> str:
+    """Fetch a document from an EDGAR filing's archive directory (form-agnostic)."""
     nodash = accession.replace("-", "")
     return sec_fetch(f"https://www.sec.gov/Archives/edgar/data/{int(cik)}/{nodash}/{raw_doc}")
+
+
+# Back-compat alias: the fetch is just an archive GET, not Form-D-specific.
+fetch_form_d_xml = fetch_archive_doc
 
 
 def _ln(tag):
@@ -116,8 +126,86 @@ def load_form_d(cik: str) -> dict:
     if not picked:
         sys.exit(f"no Form D found for CIK {cik} (issuer: {issuer})")
     accession, raw_doc = picked
-    data = parse_form_d(fetch_form_d_xml(cik, accession, raw_doc))
+    data = parse_form_d(fetch_archive_doc(cik, accession, raw_doc))
     data["accession"] = accession
+    data["form_type"] = "D"
+    data["issuer"] = data.get("issuer") or issuer
+    data["all_filings"] = list_filings(subs)
+    data["filing_date"] = next((f["date"] for f in data["all_filings"] if f["accession"] == accession), None)
+    return data
+
+
+# ---------------------------------------------------------------------------
+# Form C (Regulation Crowdfunding / Section 4(a)(6)) - funding-portal raises.
+# Form C carries the issuer, the SINGLE intermediary (funding portal / BD) by CIK + CRD +
+# funding-portal file number (the "007-" prefix), target/maximum offering amounts, the deadline,
+# and the state-jurisdiction list. Note what it does NOT carry: Form D's exemption codes and
+# accreditation fields are absent (Reg CF has no accreditation gate), so the CF evaluators key off
+# offering amounts + the intermediary block + signature persons, not exemption codes.
+# ---------------------------------------------------------------------------
+
+def _pick_form_c(subs: dict):
+    r = subs["filings"]["recent"]
+    for form, acc, doc in zip(r["form"], r["accessionNumber"], r["primaryDocument"]):
+        if form in ("C", "C/A"):
+            return acc, (doc.split("/")[-1] or "primary_doc.xml"), form
+    return None
+
+
+def parse_form_c(xml: str) -> dict:
+    """Structured extract of the Form C fields the funding-portal panel needs (namespace-agnostic)."""
+    root = ET.fromstring(xml.encode("utf-8"))
+
+    # signaturePersons -> covered persons for the Reg CF 227.503 bad-actor screen.
+    people = []
+    for node in root.iter():
+        if _ln(node.tag) != "signaturePerson":
+            continue
+        name = title = ""
+        for el in node.iter():
+            ln, txt = _ln(el.tag), (el.text or "").strip()
+            if ln == "personSignature":
+                name = txt
+            elif ln == "personTitle":
+                title = txt
+        if name:
+            people.append({"name": name, "relationships": [title] if title else []})
+
+    states = [el.text.strip() for el in root.iter()
+              if _ln(el.tag) == "issueJurisdictionSecuritiesOffering" and (el.text or "").strip()]
+
+    return {
+        "issuer": _first_text(root, "nameOfIssuer"),
+        "related_persons": people,
+        "intermediary_name": _first_text(root, "companyName"),
+        "intermediary_cik": _first_text(root, "commissionCik"),
+        "intermediary_file_number": _first_text(root, "commissionFileNumber"),
+        "intermediary_crd": _first_text(root, "crdNumber"),
+        "offering_amount": _first_text(root, "offeringAmount"),
+        "maximum_offering_amount": _first_text(root, "maximumOfferingAmount"),
+        "security_type": _first_text(root, "securityOfferedType"),
+        "price": _first_text(root, "price"),
+        "num_securities": _first_text(root, "noOfSecurityOffered"),
+        "over_subscription_accepted": _first_text(root, "overSubscriptionAccepted"),
+        "deadline_date": _first_text(root, "deadlineDate"),
+        "state_jurisdictions": states,
+    }
+
+
+def load_form_c(cik: str) -> dict:
+    """One call: CIK -> {issuer, accession, parsed Form C fields, all_filings, filing_date}.
+
+    Same envelope shape as load_form_d so the control panel can dispatch on `driver` uniformly.
+    """
+    subs = fetch_submissions(cik)
+    issuer = subs.get("name", f"CIK {cik}")
+    picked = _pick_form_c(subs)
+    if not picked:
+        sys.exit(f"no Form C found for CIK {cik} (issuer: {issuer})")
+    accession, raw_doc, form = picked
+    data = parse_form_c(fetch_archive_doc(cik, accession, raw_doc))
+    data["accession"] = accession
+    data["form_type"] = form
     data["issuer"] = data.get("issuer") or issuer
     data["all_filings"] = list_filings(subs)
     data["filing_date"] = next((f["date"] for f in data["all_filings"] if f["accession"] == accession), None)

@@ -4,7 +4,7 @@ Companion to [product-thesis.md](product-thesis.md). Pressure-tests the source-o
 The premise: every load-bearing claim traces to an authoritative source or a named human
 authority. This doc designs the *model*, not a source list.
 
-> Status: v0.1 (2026-06-29). Captured from an architecture pressure-test. Refine per the
+> Status: v0.3 (2026-06-30). Captured from an architecture pressure-test. Refine per the
 > thesis Self-Refinement Protocol.
 
 ## The core correction
@@ -120,9 +120,22 @@ the better wedge.
   `scripts/assumption-check.py`. Verifiable assumptions are checked against live data; a VIOLATED
   check flags the controls it could corrupt; accepted limitations are surfaced on dependent
   controls in the panel. **All six tiers are now implemented.**
+- **Funding-portal surface live (multi-sovereign proof):** implemented (v0.14) - `controls/reg-cf-funding-portal.json`
+  now declares `driver: form_c` and evaluates against a real Form C via `edgar_formd.load_form_c` +
+  `control-panel.py`'s driver dispatch. This is the first surface that exercises the **FINRA** and
+  **money-transmission** sovereigns end-to-end (0 coverage gaps), confirming the cumulative-duties
+  model (§"Conflict handling") is real: a single Reg CF raise is satisfied only by the union of
+  Federal-SEC + FINRA + money-transmission + state legs, not by any one sovereign. Public-side legs
+  (Form C on file, the $5M cap, the named intermediary by CIK/CRD/`007-` file number, signature
+  persons → bad-actor screen) compute from EDGAR; the FINRA-conduct/fund-custody/state legs stay
+  private/runnable and resolve to open/escalate.
 - **Not yet built (automated drift sources only):** FINRA rulebook/notices, state blue-sky, and
-  money-transmission remain `manual` version_source (no automated checker).
+  money-transmission remain `manual` version_source (no automated checker); the portal's FINRA
+  membership / funding-portal registration is surfaced from Form C but not yet auto-verified against
+  FINRA's funding-portal list.
 
 ## Revision Log
+- **v0.3 (2026-06-30):** Funding-portal surface (Form C driver) marked live — first end-to-end
+  exercise of the FINRA + money-transmission sovereigns; confirms the cumulative-duties model.
 - **v0.2 (2026-06-29):** Marked sovereign axis + provenance/drift as implemented; noted remaining gaps.
 - **v0.1 (2026-06-29):** Initial authority-model design from the architecture pressure-test.
