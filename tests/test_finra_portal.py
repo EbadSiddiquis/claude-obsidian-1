@@ -140,6 +140,48 @@ def test_verify_source_unreachable_is_open():
     assert_true("note says do not treat as clearance", "clearance" in r["note"].lower())
 
 
+def test_verify_curl_absent_is_open_not_crash():
+    # A missing fetch tool (FileNotFoundError) must resolve to open, never an uncaught crash.
+    def _boom():
+        raise FileNotFoundError("curl: command not found")
+    fp.check_sec_registration = lambda cik: _sec("REGISTERED")
+    fp.fetch_finra_list = _boom
+    r = fp.verify_portal(cik="1666102", file_number="007-00042")
+    assert_eq("curl absent → open (FINRA register unreachable)", "open", r["state"])
+
+
+# ─── _names_reconcile: token-set equality, not substring containment ─────────
+def test_names_reconcile_token_equality():
+    assert_true("identical names reconcile", fp._names_reconcile("Ksdaq Inc.", "Ksdaq Inc."))
+    assert_true("suffix-only difference reconciles", fp._names_reconcile("Ksdaq", "Ksdaq Inc."))
+    assert_true("punctuation/suffix variants reconcile",
+                fp._names_reconcile("StartEngine Capital LLC", "StartEngine Capital, LLC"))
+    # The verifier's false-positive examples must NOT reconcile (substring would have):
+    assert_true("'Inc' must not reconcile with 'Wefunder Inc'", not fp._names_reconcile("Inc", "Wefunder Inc"))
+    assert_true("'Capital LLC' must not reconcile with 'Republic Capital LLC'",
+                not fp._names_reconcile("Capital LLC", "Republic Capital LLC"))
+    assert_true("'Star' must not reconcile with 'StartEngine'", not fp._names_reconcile("Star", "StartEngine"))
+    assert_true("empty/suffix-only → no reconcile", not fp._names_reconcile("LLC", "Anything LLC"))
+
+
+# ─── malformed HTML must not bleed one entry into the next ───────────────────
+def test_parse_malformed_html_no_bleed():
+    # Drop the first entry's closing </p></div> - a chunk-split parser must still keep entries apart.
+    malformed = FINRA_HTML.replace("Beverly Hills, CA 90212</p></div>", "Beverly Hills, CA 90212", 1)
+    e8 = fp.parse_finra_entry(malformed, "007-00008")
+    assert_eq("malformed: 7-8 still resolves to Jumpstart", "Jumpstart Micro, Inc", e8.get("legal_name"))
+    e42 = fp.parse_finra_entry(malformed, "007-00042")
+    assert_eq("malformed: 7-42 still resolves to Ksdaq (no bleed)", "Ksdaq Inc.", e42.get("legal_name"))
+
+
+# ─── class-attribute variant must still parse ────────────────────────────────
+def test_parse_class_attribute_variant():
+    variant = FINRA_HTML.replace('class="multicolumn-container"', 'class="multicolumn-container even"')
+    e = fp.parse_finra_entry(variant, "007-00042")
+    assert_true("class variant still found", e.get("found"))
+    assert_eq("class variant name", "Ksdaq Inc.", e.get("legal_name"))
+
+
 def test_all_branches_never_opine():
     for status in ("REGISTERED", "WITHDRAWN", "NOT_REGISTERED"):
         _patch(_sec(status))
@@ -158,6 +200,10 @@ def main():
     test_verify_sec_registered_but_not_on_finra()
     test_verify_name_mismatch_escalates()
     test_verify_source_unreachable_is_open()
+    test_verify_curl_absent_is_open_not_crash()
+    test_names_reconcile_token_equality()
+    test_parse_malformed_html_no_bleed()
+    test_parse_class_attribute_variant()
     test_all_branches_never_opine()
     print("\nAll FINRA portal-check tests passed.")
 

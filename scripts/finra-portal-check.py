@@ -60,6 +60,14 @@ def _strip_tags(s: str) -> str:
     return re.sub(r"\s+", " ", re.sub(r"<[^>]+>", "", s)).strip()
 
 
+def _fmt_cik(cik) -> str:
+    """CIK as an int-normalized string for display; degrade to the raw value if non-numeric."""
+    try:
+        return str(int(cik))
+    except (TypeError, ValueError):
+        return str(cik)
+
+
 # ---- Leg 1: SEC funding-portal registration (EDGAR, authoritative + deterministic) ----------
 
 def check_sec_registration(cik: str) -> dict:
@@ -72,7 +80,7 @@ def check_sec_registration(cik: str) -> dict:
     r = subs.get("filings", {}).get("recent", {})
     forms = list(zip(r.get("form", []), r.get("filingDate", []), r.get("accessionNumber", [])))
     cfp = [(f, d, a) for f, d, a in forms if _is_cfportal(f)]  # recent-first order
-    has_initial = any(f.upper() == CFPORTAL_INITIAL or f.upper().startswith(CFPORTAL_INITIAL) for f, _, _ in cfp)
+    has_initial = any(f.upper().startswith(CFPORTAL_INITIAL) for f, _, _ in cfp)
     latest = cfp[0] if cfp else None
     if not cfp:
         status = "NOT_REGISTERED"
@@ -108,16 +116,22 @@ def fetch_finra_list() -> str:
 
 def parse_finra_entry(html: str, file_number: str) -> dict:
     """Find the funding-portal entry whose SEC file number matches `file_number` (normalized),
-    by the `filenum=<n>&` query in its EDGAR link (the exact, stable key)."""
+    by the `filenum=<n>` query in its EDGAR link (the exact, stable key).
+
+    Robust against malformed markup: split the page into one chunk per portal at each
+    `multicolumn-container` div (so a missing </p> can't bleed two entries together), bound each
+    chunk at the next container/hr, and tolerate class-attribute variants + escaped/raw `&`."""
     fnorm = normalize_file_number(file_number)
-    # Each entry: <div class="multicolumn-container"><p> ... </p></div>
-    for block in re.findall(r'<div class="multicolumn-container"><p>(.*?)</p>\s*</div>', html, re.S):
-        m = re.search(r'filenum=([0-9-]+)&', block)
+    # One chunk per portal; chunks[0] is the page preamble before the first entry.
+    for chunk in re.split(r'<div\b[^>]*class="multicolumn-container', html)[1:]:
+        # Bound to THIS entry only (defensive: stop before the next container/hr if one leaked in).
+        entry = re.split(r'<hr\b|<div\b', chunk)[0]
+        m = re.search(r'filenum=([0-9-]+)[&"\']', entry)
         if m and m.group(1) == fnorm:
-            name = re.search(r"<strong>(.*?)</strong>", block, re.S)
-            other = re.search(r"Other Name\(s\):\s*(.*?)(?:<br|$)", block, re.S)
-            site = re.search(r"Website URL\(s\):\s*(.*?)(?:<br|$)", block, re.S)
-            secfn = re.search(r"SEC File No\.?:\s*([0-9-]+)", block)
+            name = re.search(r"<strong>(.*?)</strong>", entry, re.S)
+            other = re.search(r"Other Name\(s\):\s*(.*?)(?:<br|$)", entry, re.S)
+            site = re.search(r"Website URL\(s\):\s*(.*?)(?:<br|$)", entry, re.S)
+            secfn = re.search(r"SEC File No\.?:\s*([0-9-]+)", entry)
             return {
                 "found": True,
                 "legal_name": _strip_tags(name.group(1)) if name else None,
@@ -131,7 +145,9 @@ def parse_finra_entry(html: str, file_number: str) -> dict:
 def check_finra_membership(file_number: str) -> dict:
     try:
         html = fetch_finra_list()
-    except RuntimeError as e:
+    except (RuntimeError, FileNotFoundError, OSError) as e:
+        # A missing/broken fetch tool (e.g. curl absent) is a "register unreachable" condition,
+        # not a crash - the never-opine design routes it to `open`, never a silent clearance.
         return {"accessible": False, "error": str(e)}
     entry = parse_finra_entry(html, file_number)
     entry["accessible"] = True
@@ -140,12 +156,26 @@ def check_finra_membership(file_number: str) -> dict:
 
 # ---- Combine: never-opine verdict -----------------------------------------------------------
 
+# Legal-entity-type suffixes dropped before comparing names (so "Ksdaq Inc." == "Ksdaq").
+_CORP_SUFFIXES = {"inc", "incorporated", "llc", "lllp", "pllc", "corp", "corporation", "ltd",
+                  "limited", "co", "company", "lp", "llp", "plc", "pc"}
+
+
+def _name_tokens(s: str) -> set:
+    return {t for t in re.findall(r"[a-z0-9]+", (s or "").lower()) if t not in _CORP_SUFFIXES}
+
+
 def _names_reconcile(a: str, b: str) -> bool:
-    if not a or not b:
+    """Token-set equality after stripping punctuation + corporate-type suffixes - NOT substring
+    containment (which would let a mis-parsed generic token like 'Capital' reconcile against
+    'Republic Capital LLC' and suppress a legitimate escalation). The SEC file number is the
+    authoritative join key; this is a secondary sanity gate, so a strict rule that errs toward
+    escalation (counsel disambiguates) is the safe never-opine bias - it never causes a false
+    clearance, only a safe extra flag."""
+    ta, tb = _name_tokens(a), _name_tokens(b)
+    if not ta or not tb:
         return False
-    norm = lambda s: re.sub(r"[^a-z0-9]", "", s.lower())
-    na, nb = norm(a), norm(b)
-    return na == nb or na in nb or nb in na
+    return ta == tb
 
 
 def verify_portal(cik=None, file_number=None, crd=None, name=None) -> dict:
@@ -154,7 +184,7 @@ def verify_portal(cik=None, file_number=None, crd=None, name=None) -> dict:
 
     evidence, name_flag = [], None
     if sec.get("accessible"):
-        evidence.append(f"EDGAR: CIK {int(cik)} legal name '{sec.get('legal_name')}', "
+        evidence.append(f"EDGAR: CIK {_fmt_cik(cik)} legal name '{sec.get('legal_name')}', "
                         f"CFPORTAL status {sec.get('status')} "
                         f"(latest {sec.get('latest_form')} {sec.get('latest_date')}, {sec.get('cfportal_count')} filing(s))")
     if finra.get("accessible") and finra.get("found"):
@@ -181,7 +211,7 @@ def verify_portal(cik=None, file_number=None, crd=None, name=None) -> dict:
                 "sec": sec, "finra": finra}
     if sec["status"] == "NOT_REGISTERED":
         return {"state": "escalate_to_counsel", "evidence": evidence,
-                "note": f"No CFPORTAL (Form Funding Portal) registration found on EDGAR for CIK {int(cik)} - "
+                "note": f"No CFPORTAL (Form Funding Portal) registration found on EDGAR for CIK {_fmt_cik(cik)} - "
                         "the named intermediary does not appear to be an SEC-registered funding portal. Counsel assesses.",
                 "sec": sec, "finra": finra}
 

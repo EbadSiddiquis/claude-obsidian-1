@@ -47,7 +47,11 @@ def run_portal_check(fd):
     cf_intermediary evaluator then degrades to surfacing the Form C identifiers)."""
     args = ["python3", os.path.join(HERE, "finra-portal-check.py"), "--json"]
     if fd.get("intermediary_cik"):
-        args += ["--cik", str(int(fd["intermediary_cik"]))]
+        try:
+            cik_arg = str(int(fd["intermediary_cik"]))
+        except (TypeError, ValueError):
+            cik_arg = str(fd["intermediary_cik"])
+        args += ["--cik", cik_arg]
     if fd.get("intermediary_file_number"):
         args += ["--file-number", fd["intermediary_file_number"]]
     if fd.get("intermediary_crd"):
