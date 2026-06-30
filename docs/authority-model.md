@@ -101,5 +101,17 @@ not by authority. For 506(b) much of the surface is private. Honest version: "as
 (verification-documented) and Reg A (public qualification) automate *more* than 506(b) and may be
 the better wedge.
 
+## Implementation status
+
+- **Sovereign axis:** implemented (v0.8) - controls carry `sovereign`; panel self-reports coverage gaps.
+- **Provenance-as-edge + drift:** implemented (v0.9) - `controls/authorities.json` registry (nodes
+  with `pinned_version`); controls cite by `authority_refs`; `scripts/authority-drift.py` checks
+  eCFR-sourced nodes and propagates stale-flags to dependent controls. eCFR is auto-checkable today;
+  Federal Register (releases/orders), C&DIs, FINRA, and state remain `manual` version_source (no
+  automated checker wired yet).
+- **Not yet built:** the named-counsel terminal node (opinion-of-record with decay); the
+  system-assumption meta-node as data; FINRA/state/MTL automated drift sources.
+
 ## Revision Log
+- **v0.2 (2026-06-29):** Marked sovereign axis + provenance/drift as implemented; noted remaining gaps.
 - **v0.1 (2026-06-29):** Initial authority-model design from the architecture pressure-test.

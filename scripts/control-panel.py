@@ -22,6 +22,7 @@ import os
 import subprocess
 import sys
 
+import authority_registry as areg
 import edgar_formd as efd
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -133,10 +134,12 @@ def build(cik, framework_path=CONTROLS):
     fd = efd.load_form_d(cik)
     watchlist = [fd["issuer"]] + [p["name"] for p in fd["related_persons"]]
     ctx = {"watchlist": watchlist, "badactor": run_badactor(watchlist)}
+    registry = areg.load_registry()
     rows = []
     for c in framework["controls"]:
         state, evidence, note = evaluate(c, fd, ctx)
-        rows.append({**c, "state": state, "evidence": evidence, "note": note})
+        nodes = areg.resolve(c.get("authority_refs"), registry)
+        rows.append({**c, "state": state, "evidence": evidence, "note": note, "authority_nodes": nodes})
     counts = {}
     for r in rows:
         counts[r["state"]] = counts.get(r["state"], 0) + 1
@@ -165,11 +168,12 @@ def render_html(framework, fd, rows, counts, urgent, coverage, cik):
     trs = []
     for r in rows:
         ev = "".join(f"<li>{e(str(x))}</li>" for x in r["evidence"])
+        pins = "".join(f'<div style="font-size:11px;color:#777">{e(n["id"])}@{e(n["pinned_version"])}</div>' for n in r.get("authority_nodes", []))
         trs.append(
             f'<tr style="border-bottom:1px solid #eaeef2">'
             f'<td><span style="background:{BADGE[r["state"]]};color:#fff;padding:2px 8px;border-radius:10px;font-size:12px;white-space:nowrap">{e(r["state"])}</span></td>'
             f'<td><b>{e(r["id"])}</b><br><span style="color:#444">{e(r["obligation"])}</span></td>'
-            f'<td><code>{e(r["authority"])}</code></td>'
+            f'<td><code>{e(r["authority"])}</code>{pins}</td>'
             f'<td style="font-size:12px;color:#555"><b>{e(r.get("sovereign","?"))}</b><br>{e(r["severity"])}<br>{e(r["locus"])}<br>owner: {e(r["owner"])}</td>'
             f'<td style="font-size:13px"><ul style="margin:0;padding-left:16px">{ev}</ul><div style="color:#555;margin-top:4px">{e(r["note"])}</div></td>'
             f'</tr>')
@@ -228,6 +232,8 @@ def main():
         print(f"[{MARK[r['state']]:>13}] {r['id']}  [{r.get('sovereign','?')}] ({r['severity']}, {r['locus']}, owner={r['owner']})")
         print(f"                {r['obligation']}")
         print(f"                authority: {r['authority']}")
+        if r.get("authority_nodes"):
+            print(f"                pinned: " + ", ".join(f"{n['id']}@{n['pinned_version']}" for n in r["authority_nodes"]))
         for ev in r["evidence"]:
             print(f"                  - {ev}")
         print(f"                -> {r['note']}\n")

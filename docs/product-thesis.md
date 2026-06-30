@@ -222,6 +222,15 @@ De-risked before building. Findings:
 
 ## Revision Log
 
+- **v0.9 (2026-06-29):** Implemented **provenance-as-edge + version-pinned drift** (authority
+  model made real). `controls/authorities.json` is the authority REGISTRY (nodes: type,
+  sovereign, citation, `pinned_version`, `version_source`); CFR sections pinned to their actual
+  current eCFR amendment_dates. Controls now cite authorities by id (`authority_refs`) - the
+  provenance edge - all resolving, no danglers. `scripts/authority-drift.py` checks each
+  ecfr-sourced node against current eCFR and, on a version change, **propagates a stale-flag to
+  every dependent control** (verified live: 0 drift now; un-pinning 230.506 flags all 4 citing
+  controls `stale -> re-verify -> escalate`, never "non-compliant"). `control-panel.py` shows
+  the pinned version per control (provenance on the counsel-ready record). `make test` green.
 - **v0.8 (2026-06-29):** Implemented the **sovereign axis** in the control schema. Every control
   in `controls/*.json` now carries `sovereign` (federal-sec / finra / state-blue-sky /
   money-transmission / corporate) and each framework declares `sovereigns_in_scope`.
