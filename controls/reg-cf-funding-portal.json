@@ -1,0 +1,71 @@
+{
+  "offering_type": "Regulation Crowdfunding (Section 4(a)(6))",
+  "surface": "issuer raising via a registered funding portal",
+  "sovereigns_in_scope": ["federal-sec", "finra", "money-transmission", "state-blue-sky"],
+  "note": "STUB control framework for the funding-portal surface. Demonstrates the multi-sovereign authority model (docs/authority-model.md): a Reg CF raise lives under Federal-SEC (Reg CF, 17 CFR Part 227) + FINRA (Funding Portal Rules, binding on the portal) + money-transmission (who holds investor funds) + state-blue-sky simultaneously. Not yet wired to an evaluator (needs a Form C driver); 'eval' keys are placeholders. Template for counsel sign-off, not legal advice.",
+  "controls": [
+    {
+      "id": "cf_aggregate_cap",
+      "obligation": "Issuer raises no more than $5,000,000 via Reg CF in a rolling 12-month period.",
+      "authority": "17 CFR 227.100(a)", "sovereign": "federal-sec",
+      "locus": "hybrid", "owner": "issuer", "cadence": "continuous", "severity": "exemption_fatal",
+      "eval": "cf_cap"
+    },
+    {
+      "id": "cf_form_c_filed",
+      "obligation": "Form C filed with the SEC (EDGAR) before the offering commences; Form C-AR filed annually.",
+      "authority": "17 CFR 227.201, 227.203", "sovereign": "federal-sec",
+      "locus": "public", "owner": "issuer", "cadence": "point_in_time", "severity": "exemption_fatal",
+      "eval": "cf_form_c_filed"
+    },
+    {
+      "id": "cf_single_intermediary",
+      "obligation": "The offering is conducted exclusively through ONE SEC-registered intermediary (funding portal or broker-dealer).",
+      "authority": "17 CFR 227.300(a), (b)", "sovereign": "federal-sec",
+      "locus": "hybrid", "owner": "issuer", "cadence": "point_in_time", "severity": "exemption_fatal",
+      "eval": "manual_private"
+    },
+    {
+      "id": "cf_bad_actor_503",
+      "obligation": "No covered person is subject to a Reg CF bad-actor disqualifying event.",
+      "authority": "17 CFR 227.503", "sovereign": "federal-sec",
+      "locus": "public", "owner": "counsel", "cadence": "continuous", "severity": "exemption_fatal",
+      "eval": "bad_actor_screen"
+    },
+    {
+      "id": "portal_finra_member",
+      "obligation": "The intermediary is a registered funding portal (Form Funding Portal) AND a FINRA member.",
+      "authority": "17 CFR 227.400 + FINRA Funding Portal Rule 110", "sovereign": "finra",
+      "locus": "public", "owner": "counsel", "cadence": "point_in_time", "severity": "exemption_fatal",
+      "eval": "manual_runnable"
+    },
+    {
+      "id": "portal_prohibited_conduct",
+      "obligation": "The portal does not give advice/recommendations, solicit, hold/manage investor funds, or take transaction-based compensation.",
+      "authority": "17 CFR 227.300(c), 402 + FINRA Funding Portal Rule 200", "sovereign": "finra",
+      "locus": "private", "owner": "portal", "cadence": "continuous", "severity": "exemption_fatal",
+      "eval": "manual_private"
+    },
+    {
+      "id": "portal_revenue_report",
+      "obligation": "The portal files Form FP-Statement of Revenue within 60 days of fiscal year-end.",
+      "authority": "FINRA Funding Portal Rule 300", "sovereign": "finra",
+      "locus": "private", "owner": "portal", "cadence": "continuous", "severity": "curable_procedural",
+      "eval": "manual_continuous"
+    },
+    {
+      "id": "funds_qualified_third_party",
+      "obligation": "Investor funds are held by a qualified third party (bank/escrow), not the portal; AML/BSA controls applied where applicable.",
+      "authority": "17 CFR 227.303(e) + bank/MTL/FinCEN guidance", "sovereign": "money-transmission",
+      "locus": "private", "owner": "portal", "cadence": "continuous", "severity": "exemption_fatal",
+      "eval": "manual_private"
+    },
+    {
+      "id": "cf_state_notice",
+      "obligation": "Confirm state treatment: Reg CF securities are covered securities (state registration preempted); satisfy any residual notice + state antifraud.",
+      "authority": "15 U.S.C. 77r(b)(4) (Section 18) + applicable state law", "sovereign": "state-blue-sky",
+      "locus": "private", "owner": "issuer", "cadence": "point_in_time", "severity": "curable_procedural",
+      "eval": "manual_private"
+    }
+  ]
+}

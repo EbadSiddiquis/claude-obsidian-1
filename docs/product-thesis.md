@@ -222,6 +222,17 @@ De-risked before building. Findings:
 
 ## Revision Log
 
+- **v0.8 (2026-06-29):** Implemented the **sovereign axis** in the control schema. Every control
+  in `controls/*.json` now carries `sovereign` (federal-sec / finra / state-blue-sky /
+  money-transmission / corporate) and each framework declares `sovereigns_in_scope`.
+  `control-panel.py` self-reports **sovereign coverage** and flags any in-scope sovereign with
+  0 controls as a COVERAGE GAP -> escalate (the anti-blind-spot mechanism: the system refuses to
+  look complete when it under-covers a sovereign; verified firing). Adding the axis immediately
+  exposed a real gap in our own 506(b) set - the **corporate** sovereign (valid authorization /
+  issuance) had 0 controls; closed with 2 stubs. Added `controls/reg-cf-funding-portal.json`: a
+  multi-sovereign STUB for the portal surface (federal-sec + finra + money-transmission +
+  state-blue-sky) proving the schema generalizes. `control-panel.py` gained `--framework`.
+  `make test` green.
 - **v0.7 (2026-06-29):** Architecture pressure-test produced a typed AUTHORITY MODEL
   ([authority-model.md](authority-model.md)). Key sharpenings that revise this thesis:
   (1) authority is a typed graph node with provenance as an edge, not a citation string;

@@ -111,8 +111,25 @@ def evaluate(control, fd, ctx):
     return "open", [], "Needs internal evidence; counsel confirms."
 
 
-def build(cik):
-    framework = json.load(open(CONTROLS, encoding="utf-8"))
+def sovereign_coverage(framework, rows):
+    """Self-report coverage along the authority-model sovereign axis: which declared-in-scope
+    sovereigns actually have controls, and which are GAPS (in scope but 0 controls = the system
+    does not yet cover that sovereign -> it must say so, not look complete)."""
+    in_scope = framework.get("sovereigns_in_scope", [])
+    counts = {}
+    for r in rows:
+        counts[r.get("sovereign", "UNSPECIFIED")] = counts.get(r.get("sovereign", "UNSPECIFIED"), 0) + 1
+    return {
+        "in_scope": in_scope,
+        "counts": counts,
+        "gaps": [s for s in in_scope if counts.get(s, 0) == 0],
+        "undeclared": [s for s in counts if s != "UNSPECIFIED" and in_scope and s not in in_scope],
+        "missing_field": [r["id"] for r in rows if not r.get("sovereign")],
+    }
+
+
+def build(cik, framework_path=CONTROLS):
+    framework = json.load(open(framework_path, encoding="utf-8"))
     fd = efd.load_form_d(cik)
     watchlist = [fd["issuer"]] + [p["name"] for p in fd["related_persons"]]
     ctx = {"watchlist": watchlist, "badactor": run_badactor(watchlist)}
@@ -124,14 +141,26 @@ def build(cik):
     for r in rows:
         counts[r["state"]] = counts.get(r["state"], 0) + 1
     urgent = [r for r in rows if r["severity"] == "exemption_fatal" and r["state"] in ("open", "escalate_to_counsel")]
-    return framework, fd, rows, counts, urgent
+    coverage = sovereign_coverage(framework, rows)
+    return framework, fd, rows, counts, urgent, coverage
 
 
 BADGE = {"satisfied": "#1a7f37", "open": "#6e7781", "escalate_to_counsel": "#bc4c00", "n/a": "#0969da"}
 
 
-def render_html(framework, fd, rows, counts, urgent, cik):
+def render_html(framework, fd, rows, counts, urgent, coverage, cik):
     e = html.escape
+    cov_items = []
+    for s in coverage["in_scope"]:
+        n = coverage["counts"].get(s, 0)
+        if n == 0:
+            cov_items.append(f'<li><b style="color:#bc4c00">{e(s)}: COVERAGE GAP</b> &mdash; in scope, 0 controls &rarr; escalate (sovereign not yet modeled)</li>')
+        else:
+            cov_items.append(f'<li><b>{e(s)}</b>: {n} control(s)</li>')
+    for s in coverage["undeclared"]:
+        cov_items.append(f'<li>{e(s)}: {coverage["counts"][s]} control(s) (not declared in scope &mdash; review)</li>')
+    cov_html = (f'<div style="background:#ddf4ff;border:1px solid #54aeff66;border-radius:6px;padding:10px 14px;margin-top:12px">'
+                f'<b>Sovereign coverage</b> (authority-model axis)<ul style="margin:6px 0 0">{"".join(cov_items)}</ul></div>')
     summary = " &middot; ".join(f"{e(k)}: {v}" for k, v in sorted(counts.items())) + " &middot; conclusions drawn: 0"
     trs = []
     for r in rows:
@@ -141,7 +170,7 @@ def render_html(framework, fd, rows, counts, urgent, cik):
             f'<td><span style="background:{BADGE[r["state"]]};color:#fff;padding:2px 8px;border-radius:10px;font-size:12px;white-space:nowrap">{e(r["state"])}</span></td>'
             f'<td><b>{e(r["id"])}</b><br><span style="color:#444">{e(r["obligation"])}</span></td>'
             f'<td><code>{e(r["authority"])}</code></td>'
-            f'<td style="font-size:12px;color:#555">{e(r["severity"])}<br>{e(r["locus"])}<br>owner: {e(r["owner"])}</td>'
+            f'<td style="font-size:12px;color:#555"><b>{e(r.get("sovereign","?"))}</b><br>{e(r["severity"])}<br>{e(r["locus"])}<br>owner: {e(r["owner"])}</td>'
             f'<td style="font-size:13px"><ul style="margin:0;padding-left:16px">{ev}</ul><div style="color:#555;margin-top:4px">{e(r["note"])}</div></td>'
             f'</tr>')
     urgent_li = "".join(f"<li><b>{e(r['id'])}</b> &mdash; {e(r['obligation'])} <code>{e(r['authority'])}</code></li>" for r in urgent)
@@ -158,6 +187,7 @@ open items and judgment calls for counsel. Outputs are <i>satisfied / open / esc
 <div style="background:#ffebe9;border:1px solid #ff818266;border-radius:6px;padding:10px 14px">
 <b>Urgent &mdash; exemption-fatal, not yet satisfied ({len(urgent)})</b>
 <ul style="margin:6px 0 0">{urgent_li}</ul></div>
+{cov_html}
 <table style="border-collapse:collapse;width:100%;margin-top:16px;font-size:14px" border="0">
 <thead><tr style="text-align:left;border-bottom:2px solid #d0d7de">
 <th>State</th><th>Control</th><th>Authority</th><th>Axes</th><th>Evidence / Note</th></tr></thead>
@@ -171,21 +201,23 @@ require issuer evidence. This panel never concludes; counsel opines.</p>
 def main():
     ap = argparse.ArgumentParser(description="Render the Rule 506(b) counsel-ready control panel for a CIK (never-opine).")
     ap.add_argument("--cik", required=True)
+    ap.add_argument("--framework", default=CONTROLS, help="control framework JSON (default: reg-d-506b.json)")
     ap.add_argument("--json", action="store_true")
     ap.add_argument("--html", metavar="PATH", help="write a self-contained HTML report to PATH")
     args = ap.parse_args()
 
-    framework, fd, rows, counts, urgent = build(args.cik)
+    framework, fd, rows, counts, urgent, coverage = build(args.cik, args.framework)
 
     if args.html:
         with open(args.html, "w", encoding="utf-8") as fh:
-            fh.write(render_html(framework, fd, rows, counts, urgent, args.cik))
+            fh.write(render_html(framework, fd, rows, counts, urgent, coverage, args.cik))
         print(f"wrote {args.html}")
         return
 
     if args.json:
         print(json.dumps({"issuer": fd["issuer"], "cik": str(int(args.cik)), "form_d": fd.get("accession"),
                           "offering_type": framework["offering_type"], "counts": counts,
+                          "sovereign_coverage": coverage,
                           "exemption_fatal_open": [r["id"] for r in urgent], "controls": rows}, indent=2))
         return
 
@@ -193,13 +225,22 @@ def main():
     print(f"Counsel-ready control panel | {framework['offering_type']} | {fd['issuer']} | CIK {int(args.cik)} | Form D {fd.get('accession')}")
     print(" · ".join(f"{k}: {v}" for k, v in sorted(counts.items())) + " · conclusions drawn: 0\n")
     for r in rows:
-        print(f"[{MARK[r['state']]:>13}] {r['id']}  ({r['severity']}, {r['locus']}, owner={r['owner']})")
+        print(f"[{MARK[r['state']]:>13}] {r['id']}  [{r.get('sovereign','?')}] ({r['severity']}, {r['locus']}, owner={r['owner']})")
         print(f"                {r['obligation']}")
         print(f"                authority: {r['authority']}")
         for ev in r["evidence"]:
             print(f"                  - {ev}")
         print(f"                -> {r['note']}\n")
-    print(f"URGENT (exemption-fatal, not yet satisfied): {len(urgent)} -> " + ", ".join(r["id"] for r in urgent))
+    print("Sovereign coverage (authority-model axis):")
+    for s in coverage["in_scope"]:
+        n = coverage["counts"].get(s, 0)
+        gap = "   <- COVERAGE GAP: in scope, 0 controls -> escalate (sovereign not yet modeled)" if n == 0 else ""
+        print(f"  {s}: {n} control(s){gap}")
+    for s in coverage["undeclared"]:
+        print(f"  {s}: {coverage['counts'][s]} control(s) (not declared in scope - review)")
+    if coverage["missing_field"]:
+        print(f"  ! controls missing a sovereign: {coverage['missing_field']}")
+    print(f"\nURGENT (exemption-fatal, not yet satisfied): {len(urgent)} -> " + ", ".join(r["id"] for r in urgent))
     print("\nThis panel assembles and flags. It never concludes. Counsel opines.")
 
 
