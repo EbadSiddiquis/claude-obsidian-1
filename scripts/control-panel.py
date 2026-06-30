@@ -41,6 +41,28 @@ def run_badactor(names):
     return json.loads(out.stdout)
 
 
+def run_portal_check(fd):
+    """Verify the Form C intermediary against the SEC (EDGAR CFPORTAL) + FINRA registers.
+    Returns the verifier's {state, evidence, note, ...} dict, or None on failure (the
+    cf_intermediary evaluator then degrades to surfacing the Form C identifiers)."""
+    args = ["python3", os.path.join(HERE, "finra-portal-check.py"), "--json"]
+    if fd.get("intermediary_cik"):
+        args += ["--cik", str(int(fd["intermediary_cik"]))]
+    if fd.get("intermediary_file_number"):
+        args += ["--file-number", fd["intermediary_file_number"]]
+    if fd.get("intermediary_crd"):
+        args += ["--crd", fd["intermediary_crd"]]
+    if fd.get("intermediary_name"):
+        args += ["--name", fd["intermediary_name"]]
+    out = subprocess.run(args, capture_output=True, text=True, env={**os.environ})
+    if out.returncode != 0:
+        return None
+    try:
+        return json.loads(out.stdout)
+    except json.JSONDecodeError:
+        return None
+
+
 def evaluate(control, fd, ctx):
     """Return (state, evidence, note) for one control given parsed Form D `fd` and shared ctx."""
     key = control["eval"]
@@ -159,14 +181,23 @@ def evaluate(control, fd, ctx):
              "reporting obligation runs (continuous).")
 
     if key == "cf_intermediary":
+        # Live two-register verification (SEC EDGAR CFPORTAL + FINRA funding-portal list),
+        # pre-computed in build() and passed via ctx. Resolves to satisfied when BOTH public
+        # registers confirm on the SEC file number with reconciling names (a pure public-register
+        # fact), escalate on any inconsistency/withdrawal, open if a register was unreachable.
+        portal = ctx.get("portal")
+        if portal:
+            return portal["state"], portal["evidence"], portal["note"]
+        # Fallback: no verification available (no identifiers, or the subprocess failed) -> surface
+        # what the Form C gave us; never imply a clearance.
         nm, icik = fd.get("intermediary_name"), fd.get("intermediary_cik")
         crd, fno = fd.get("intermediary_crd"), fd.get("intermediary_file_number")
         ev = [f"intermediary: {nm}", f"intermediary CIK: {icik}", f"file number: {fno}", f"CRD: {crd}"]
-        portal = bool(fno and str(fno).startswith("007-"))
+        is_portal_fn = bool(fno and str(fno).startswith("007-"))
         if nm and (fno or crd):
-            note = ("Form C names a single intermediary" + (" with a funding-portal file number (007- prefix)" if portal else "") +
-                    " / CRD - verify CURRENT FINRA membership + funding-portal registration against FINRA's funding-portal list "
-                    "(runnable; not yet wired). Counsel confirms.")
+            note = ("Form C names a single intermediary" + (" with a funding-portal file number (007- prefix)" if is_portal_fn else "") +
+                    " / CRD, but the SEC/FINRA registers could not be reached to verify current registration + "
+                    "membership - re-run; do not treat as a clearance. Counsel confirms.")
             return "open", ev, note
         return "open", ev, "Intermediary identity not fully determinable from Form C; confirm a registered portal/BD."
 
@@ -209,6 +240,9 @@ def build(cik, framework_path=CONTROLS, opinions_path=None):
     fd = loader(cik)
     watchlist = [fd["issuer"]] + [p["name"] for p in fd.get("related_persons", [])]
     ctx = {"watchlist": watchlist, "badactor": run_badactor(watchlist)}
+    # Form C surfaces an intermediary -> verify it against the SEC + FINRA registers (once).
+    if fd.get("intermediary_cik") or fd.get("intermediary_file_number"):
+        ctx["portal"] = run_portal_check(fd)
     registry = areg.load_registry()
     assumptions = asm_reg.load_assumptions()
     rows = []

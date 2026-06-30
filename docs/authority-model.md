@@ -4,7 +4,7 @@ Companion to [product-thesis.md](product-thesis.md). Pressure-tests the source-o
 The premise: every load-bearing claim traces to an authoritative source or a named human
 authority. This doc designs the *model*, not a source list.
 
-> Status: v0.3 (2026-06-30). Captured from an architecture pressure-test. Refine per the
+> Status: v0.4 (2026-06-30). Captured from an architecture pressure-test. Refine per the
 > thesis Self-Refinement Protocol.
 
 ## The core correction
@@ -129,12 +129,21 @@ the better wedge.
   (Form C on file, the $5M cap, the named intermediary by CIK/CRD/`007-` file number, signature
   persons → bad-actor screen) compute from EDGAR; the FINRA-conduct/fund-custody/state legs stay
   private/runnable and resolve to open/escalate.
-- **Not yet built (automated drift sources only):** FINRA rulebook/notices, state blue-sky, and
-  money-transmission remain `manual` version_source (no automated checker); the portal's FINRA
-  membership / funding-portal registration is surfaced from Form C but not yet auto-verified against
-  FINRA's funding-portal list.
+- **FINRA membership auto-verified (first verified FINRA-sovereign control):** implemented (v0.15) -
+  `scripts/finra-portal-check.py` resolves `portal_finra_member` from two authoritative public
+  registers joined on the SEC file number: SEC registration (EDGAR `CFPORTAL` form family, incl.
+  `CFPORTAL-W` withdrawal detection) + FINRA membership (the "Funding Portals We Regulate" list,
+  directly fetchable HTML). `satisfied` only when both confirm with reconciling names (a pure
+  public-register fact); `escalate` on withdrawal / inconsistency / name mismatch; `open` if
+  unreachable. Registered as system-assumption nodes (`asm-cfportal-forms`, `asm-finra-fp-html`).
+- **Not yet built (automated drift sources only):** FINRA *rulebook/notices* (the FP Rule text
+  itself), state blue-sky, and money-transmission remain `manual` version_source (no automated
+  drift checker) - distinct from the membership *register* check above, which is now live.
 
 ## Revision Log
+- **v0.4 (2026-06-30):** FINRA membership auto-verified — `portal_finra_member` is the first
+  FINRA-sovereign control to reach a verified state, from the SEC (EDGAR CFPORTAL) + FINRA
+  registers joined on the SEC file number.
 - **v0.3 (2026-06-30):** Funding-portal surface (Form C driver) marked live — first end-to-end
   exercise of the FINRA + money-transmission sovereigns; confirms the cumulative-duties model.
 - **v0.2 (2026-06-29):** Marked sovereign axis + provenance/drift as implemented; noted remaining gaps.

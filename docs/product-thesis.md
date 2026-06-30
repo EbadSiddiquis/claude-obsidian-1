@@ -222,6 +222,25 @@ De-risked before building. Findings:
 
 ## Revision Log
 
+- **v0.15 (2026-06-30):** Auto-verified **FINRA membership** — `portal_finra_member` goes from
+  "runnable; not yet wired" to a live, deterministic two-register check (`scripts/finra-portal-check.py`).
+  It joins the SEC register (EDGAR `CFPORTAL` form family — registered iff a CFPORTAL exists and the
+  latest isn't a `-W` withdrawal) and the FINRA register (the "Funding Portals We Regulate" list,
+  whose own words are "registered with the SEC as funding portals **and are funding portal members
+  of FINRA**") on the **SEC file number** (Form C's `007-00042` → FINRA's `7-42`). Resolves to
+  `satisfied` only when both registers confirm with reconciling legal names — a *pure public-register
+  fact*, the kind the thesis says is the automatable core — and to `escalate` on withdrawal, register
+  inconsistency, or name mismatch; `open` if a source is unreachable (never a silent clearance). This
+  is the **first FINRA-sovereign control to reach a verified state**, and it deterministically ties the
+  Form C brand name ("Mr. Crowd") to the legal filer ("Ksdaq Inc."), which is itself a useful
+  disambiguation the issuer's own filing doesn't make explicit. Diagnose-before-detour paid off twice:
+  the FINRA page looked like it needed a JS render / had no API, but a plain `curl` returns parseable
+  HTML (200), and the file-number key beats fuzzy name matching. Captured the method in `CLAUDE.md`,
+  registered the new dependencies as system-assumption nodes (`asm-cfportal-forms`, `asm-finra-fp-html`
+  — both live-checked and holding; `asm-fileno-normalize` accepted, fails safe to escalate), and added
+  hermetic branch tests (`tests/test_finra_portal.py`). `make test` green (12 suites). Sharpens the
+  "more-automatable surfaces are the wedge" claim: Reg CF's registration legs are *fully* public, so
+  they automate to a verified state where 506(b)'s defining duties cannot.
 - **v0.14 (2026-06-30):** Shipped the **Form C driver** — the funding-portal surface goes from
   stub to live. `scripts/edgar_formd.py` now drives BOTH Form D and Form C (`load_form_c` /
   `parse_form_c`, identical envelope shape), and `control-panel.py` dispatches on a framework's
@@ -233,7 +252,7 @@ De-risked before building. Findings:
   concluded from one filing; the single named intermediary by CIK + CRD + `007-` funding-portal
   file number → feeds the FINRA-membership check; signature persons → the 227.503 bad-actor
   screen), while FINRA-conduct, fund-custody, and state legs resolve to `open`/`escalate`. The
-  panel draws 0 conclusions. This is the first time the **FINRA**
+  panel draws 0 legal conclusions (control states are evidence-states, never "compliant"). This is the first time the **FINRA**
   and **money-transmission** sovereigns are exercised end-to-end (0 coverage gaps), proving the
   multi-sovereign authority model is real and not Federal-SEC-only. Confirms the "better wedge"
   reasoning from another angle: like 506(c)'s documentable verification, Reg CF's surface is

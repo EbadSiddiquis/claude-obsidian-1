@@ -15,6 +15,7 @@ USAGE
   python3 scripts/assumption-check.py --json
 """
 import argparse
+import importlib.util
 import json
 import os
 import re
@@ -27,6 +28,12 @@ import edgar_formd as efd
 HERE = os.path.dirname(os.path.abspath(__file__))
 UA = os.environ.get("EDGAR_USER_AGENT", "claude-obsidian-research " + os.environ.get("SEC_CONTACT_EMAIL", "set-SEC_CONTACT_EMAIL@example.com"))
 REF_CIK = "2141182"  # a stable filer with a Form D, used as the self-test fixture
+REF_PORTAL_CIK = "1666102"  # Ksdaq Inc. / Mr. Crowd - a stable funding portal (CFPORTAL since 2016), file 007-00042
+
+# finra-portal-check has a hyphenated filename -> load it by path to reuse its real fetch+parse.
+_fp_spec = importlib.util.spec_from_file_location("finra_portal_check", os.path.join(HERE, "finra-portal-check.py"))
+finra_portal = importlib.util.module_from_spec(_fp_spec)
+_fp_spec.loader.exec_module(finra_portal)
 
 
 def _curl(url):
@@ -113,6 +120,28 @@ def _ap_rss_shape(ctx):
     items = re.findall(r"<item>(.*?)</item>", raw, re.S)
     titled = [b for b in items if re.search(r"<title>.*?</title>", b, re.S)]
     return len(titled) >= 1, f"items={len(items)} with-title={len(titled)}"
+
+
+@check("cfportal_forms")
+def _cfportal_forms(ctx):
+    try:
+        subs = efd.fetch_submissions(REF_PORTAL_CIK)
+    except SystemExit as e:
+        return None, f"fetch failed: {e}"
+    forms = subs.get("filings", {}).get("recent", {}).get("form", [])
+    cfp = [f for f in forms if f.upper().startswith("CFPORTAL")]
+    return len(cfp) >= 1, f"reference portal CIK {REF_PORTAL_CIK} ({subs.get('name')!r}): {len(cfp)} CFPORTAL-family filing(s), e.g. {cfp[:3]}"
+
+
+@check("finra_fp_shape")
+def _finra_fp_shape(ctx):
+    try:
+        html = finra_portal.fetch_finra_list()
+    except Exception as e:  # RuntimeError on fetch failure, or curl absent
+        return None, f"fetch failed: {e}"
+    entry = finra_portal.parse_finra_entry(html, "007-00042")  # Ksdaq/Mr. Crowd, file 7-42
+    ok = bool(entry.get("found")) and bool(entry.get("legal_name"))
+    return ok, f"div.multicolumn-container entries parseable; file 7-42 -> {entry.get('legal_name')!r}"
 
 
 def main():

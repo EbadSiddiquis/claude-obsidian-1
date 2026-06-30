@@ -56,6 +56,33 @@
       "affects_controls": ["bad_actor_506d", "cf_bad_actor_503"]
     },
     {
+      "id": "asm-cfportal-forms",
+      "kind": "verifiable",
+      "statement": "EDGAR funding-portal registration uses the CFPORTAL form family: CFPORTAL (initial), CFPORTAL/A (amendment), CFPORTAL-W (withdrawal). Registered = a CFPORTAL exists and the latest is not a -W.",
+      "used_by": "finra-portal-check.check_sec_registration",
+      "risk_if_wrong": "The SEC-registration leg of portal_finra_member mis-reads (false REGISTERED/WITHDRAWN) -> the control's state is silently wrong.",
+      "check": "cfportal_forms",
+      "affects_controls": ["portal_finra_member"]
+    },
+    {
+      "id": "asm-finra-fp-html",
+      "kind": "verifiable",
+      "statement": "FINRA's 'Funding Portals We Regulate' page lists each portal in a div.multicolumn-container with an EDGAR link carrying filenum=<n>&type=CFPORTAL; presence on the list == FINRA member.",
+      "used_by": "finra-portal-check.parse_finra_entry",
+      "risk_if_wrong": "The FINRA-membership leg silently finds nothing -> portal_finra_member wrongly escalates (fails safe) or, if the structure shifts subtly, mis-attributes an entry.",
+      "check": "finra_fp_shape",
+      "affects_controls": ["portal_finra_member"]
+    },
+    {
+      "id": "asm-fileno-normalize",
+      "kind": "accepted",
+      "statement": "SEC funding-portal file numbers normalize to FINRA's display form by stripping leading-zero padding per hyphen part (007-00042 -> 7-42); this is the join key between the two registers.",
+      "used_by": "finra-portal-check.normalize_file_number",
+      "risk_if_wrong": "A normalization miss makes the FINRA lookup fail -> portal_finra_member escalates ('not on list') rather than falsely satisfying. Fails SAFE (escalate, never a false clearance).",
+      "check": null,
+      "affects_controls": ["portal_finra_member"]
+    },
+    {
       "id": "asm-badactor-substring",
       "kind": "accepted",
       "statement": "Bad-actor matching is case-insensitive substring matching; false positives are EXPECTED and resolved by human disambiguation.",
