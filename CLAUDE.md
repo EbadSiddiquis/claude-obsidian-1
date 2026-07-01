@@ -147,6 +147,51 @@ ID (zero-padded in API paths). Full method + identifiers: [[EDGAR Data Access]],
 [[EDGAR APIs]], [[EDGAR Bulk Data]] in the wiki. (Established 2026-06-29 after WebFetch
 403s blocked SEC primary sources during the SEC/EDGAR autoresearch.)
 
+## FINRA Funding-Portal Verification (companion authoritative source)
+
+To verify a Reg CF intermediary is a **registered funding portal AND a current FINRA member**
+(17 CFR 227.400 + FINRA FP Rule 110), two public registers join on the **SEC file number**:
+
+1. **SEC registration** — EDGAR funding-portal filings use the `CFPORTAL` form family
+   (`CFPORTAL` initial / `CFPORTAL/A` amendment / `CFPORTAL-W` withdrawal). Registered = a
+   CFPORTAL exists and the latest is not a `-W`. Fetched via `sec-fetch.sh` (the portal's CIK).
+2. **FINRA membership** — `https://www.finra.org/about/firms-we-regulate/funding-portals-we-regulate`
+   ("The following crowdfunding intermediaries are registered with the SEC as funding portals
+   and are funding portal members of FINRA"). **This page is plain server-rendered HTML and is
+   directly fetchable with a normal `curl` + descriptive User-Agent (HTTP 200, no JS, no key)** —
+   `sec-fetch.sh` is sec.gov-only, so FINRA uses a direct curl. Each portal is a
+   `div.multicolumn-container` whose EDGAR link carries `filenum=<n>&type=CFPORTAL`. The SEC file
+   number is the join key: Form C's `007-00042` normalizes to FINRA's `7-42` (strip leading-zero
+   padding per hyphen part). Match on file number, not fuzzy name — it ties the Form C brand
+   (e.g. "Mr. Crowd") to the legal filer (e.g. "Ksdaq Inc.") deterministically.
+
+Wrapper: `python3 scripts/finra-portal-check.py --cik <cik> --file-number <007-#####>` → never-opine
+verdict (`satisfied` only when both registers confirm + names reconcile; `escalate` on
+withdrawal / register inconsistency / name mismatch; `open` if a register is unreachable).
+(Established 2026-06-30 wiring the funding-portal control `portal_finra_member` to live data.)
+
+## Money-Transmission / Fund-Custody Verification (the portal's own filing discloses it)
+
+The fund-custody / money-transmission leg of a Reg CF raise (17 CFR 227.303(e)) *looks* fully
+private ("escrow agreement, AML controls") but the load-bearing facts are public in **two EDGAR
+filings**, chained:
+
+1. **Who holds investor funds** — the portal's **Form Funding Portal (`CFPORTAL`)** `primary_doc.xml`
+   discloses it in structured fields: `escrowArrangements` → `investorFundsContacts` →
+   `investorFundsContactName` (+ address). A compliant portal names a third party here, distinct
+   from itself (the portal may not handle funds, 227.300(c)(2)). Namespace `http://www.sec.gov/edgar/crowdfunding`;
+   parse namespace-agnostically (reuse `edgar_formd._find` / `_first_text`).
+2. **Is that custodian a "qualified third party"** (registered BD or bank, both MTL/MSB-exempt) —
+   a **registered broker-dealer files annual `X-17A-5` FOCUS reports on EDGAR** (SEA Rule 17a-5).
+   Resolve the custodian name → CIK via the EDGAR atom company search
+   (`browse-edgar?action=getcompany&company=<name>&type=X-17A-5&output=atom`), then confirm `X-17A-5`
+   in that CIK's submissions. A *bank* custodian won't file X-17A-5 → "confirm manually", not a failure.
+
+Wrapper: `python3 scripts/fund-custody-check.py --portal-cik <cik>` → never-opine (`escalate` if the
+portal names itself / no custodian; `open` evidenced when a qualified-BD third party checks out — the
+executed escrow agreement + AML/BSA stay private, so never `satisfied`). Live proof: Mr. Crowd → North
+Capital Private Securities Corporation (CIK 1496269, X-17A-5 filer). (Established 2026-06-30.)
+
 ## MCP (Optional)
 
 If you configured the MCP server, Claude can read and write vault notes directly.

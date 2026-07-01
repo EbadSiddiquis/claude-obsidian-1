@@ -1,0 +1,599 @@
+#!/usr/bin/env python3
+"""control-panel.py - render a counsel-ready control panel for a CIK (multi-framework).
+
+Reads a control framework JSON (default controls/reg-d-506b.json; pass --framework for Rule
+506(c) or the Reg CF funding-portal set), loads the issuer's driving filing (Form D or, when the
+framework declares `driver: form_c`, Form C), computes each control's state from public data where
+possible, marks the rest honestly, and renders the whole checklist (text or self-contained HTML).
+
+THE DISCIPLINE: assembles and flags; never concludes. Each control resolves to
+satisfied / open / escalate_to_counsel / n/a with a citation and a note. Counsel opines.
+
+USAGE
+  export SEC_CONTACT_EMAIL="you@example.com"
+  python3 scripts/control-panel.py --cik 2141182                                            # Rule 506(b) (default)
+  python3 scripts/control-panel.py --cik 2140631 --framework controls/reg-cf-funding-portal.json  # Reg CF
+  python3 scripts/control-panel.py --cik 2141182 --json
+  python3 scripts/control-panel.py --cik 2141182 --html /tmp/panel.html
+"""
+import argparse
+import datetime
+import html
+import json
+import os
+import subprocess
+import sys
+
+import assumption_registry as asm_reg
+import authority_registry as areg
+import counsel
+import edgar_formd as efd
+
+HERE = os.path.dirname(os.path.abspath(__file__))
+CONTROLS = os.path.join(os.path.dirname(HERE), "controls", "reg-d-506b.json")
+INTEGRATION_WINDOW_DAYS = 180
+
+
+def run_badactor(names):
+    out = subprocess.run(
+        ["python3", os.path.join(HERE, "badactor-watch.py"), "--names", "; ".join(names), "--json"],
+        capture_output=True, text=True, env={**os.environ})
+    if out.returncode != 0:
+        sys.exit(f"badactor-watch failed ({out.returncode}): {out.stderr.strip()}")
+    return json.loads(out.stdout)
+
+
+def run_portal_check(fd):
+    """Verify the Form C intermediary against the SEC (EDGAR CFPORTAL) + FINRA registers.
+    Returns the verifier's {state, evidence, note, ...} dict, or None on failure (the
+    cf_intermediary evaluator then degrades to surfacing the Form C identifiers)."""
+    args = ["python3", os.path.join(HERE, "finra-portal-check.py"), "--json"]
+    if fd.get("intermediary_cik"):
+        try:
+            cik_arg = str(int(fd["intermediary_cik"]))
+        except (TypeError, ValueError):
+            cik_arg = str(fd["intermediary_cik"])
+        args += ["--cik", cik_arg]
+    if fd.get("intermediary_file_number"):
+        args += ["--file-number", fd["intermediary_file_number"]]
+    if fd.get("intermediary_crd"):
+        args += ["--crd", fd["intermediary_crd"]]
+    if fd.get("intermediary_name"):
+        args += ["--name", fd["intermediary_name"]]
+    out = subprocess.run(args, capture_output=True, text=True, env={**os.environ})
+    if out.returncode != 0:
+        return None
+    try:
+        return json.loads(out.stdout)
+    except json.JSONDecodeError:
+        return None
+
+
+def run_fund_custody(fd):
+    """Verify the money-transmission / fund-custody leg from the portal's Form Funding Portal
+    (EDGAR CFPORTAL). Returns {state, evidence, note, ...} or None on failure (the evaluator
+    then degrades to the manual surface)."""
+    cik = fd.get("intermediary_cik")
+    if not cik:
+        return None
+    try:
+        cik_arg = str(int(cik))
+    except (TypeError, ValueError):
+        cik_arg = str(cik)
+    out = subprocess.run(
+        ["python3", os.path.join(HERE, "fund-custody-check.py"), "--portal-cik", cik_arg, "--json"],
+        capture_output=True, text=True, env={**os.environ})
+    if out.returncode != 0:
+        return None
+    try:
+        return json.loads(out.stdout)
+    except json.JSONDecodeError:
+        return None
+
+
+def _parse_deadline(s):
+    """Form C deadlineDate is MM-DD-YYYY -> date, or None."""
+    try:
+        m, d, y = str(s).split("-")
+        return datetime.date(int(y), int(m), int(d))
+    except (ValueError, AttributeError):
+        return None
+
+
+def _intermediary_key(r):
+    """Stable identity for an intermediary across filings: CIK if present, else file number, else
+    name. Avoids under-counting a distinct intermediary whose CIK didn't parse. None if unknown."""
+    cik = r.get("intermediary_cik")
+    if cik is not None:
+        try:
+            return str(int(cik))
+        except (TypeError, ValueError):
+            return str(cik)
+    return r.get("intermediary_file_number") or r.get("intermediary_name") or None
+
+
+def _concurrent_distinct_intermediaries(rows):
+    """True if two of the issuer's Form C filings name DIFFERENT intermediaries with OVERLAPPING
+    offering windows [filingDate, deadlineDate] - i.e. a single offering period served by more than
+    one intermediary (the 227.300(b) concern), as opposed to permitted sequential raises. A missing
+    end-date is treated as open-ended (conservatively overlaps), erring toward escalate (safe)."""
+    wins = []
+    for r in rows:
+        key = _intermediary_key(r)
+        try:
+            start = datetime.date.fromisoformat(r.get("date")) if r.get("date") else None
+        except ValueError:
+            start = None
+        if key is None or start is None:
+            continue
+        wins.append((key, start, _parse_deadline(r.get("deadline_date"))))
+    for i in range(len(wins)):
+        for j in range(i + 1, len(wins)):
+            ci, si, ei = wins[i]
+            cj, sj, ej = wins[j]
+            if ci == cj:
+                continue
+            # overlap if start_i <= end_j and start_j <= end_i (open-ended end -> always satisfies)
+            le_ij = (ei is None) or (sj <= ei)
+            le_ji = (ej is None) or (si <= ej)
+            if le_ij and le_ji:
+                return True
+    return False
+
+
+def evaluate(control, fd, ctx):
+    """Return (state, evidence, note) for one control given parsed Form D `fd` and shared ctx."""
+    key = control["eval"]
+
+    if key == "exemption_is_506b":
+        ex = fd.get("exemptions") or []
+        if "06b" in ex:
+            return "satisfied", [f"Form D federalExemptionsExclusions = {ex}"], "Form D claims Rule 506(b) [06b]."
+        if "06c" in ex:
+            return "escalate_to_counsel", [f"Form D = {ex}"], "Form D claims 506(c), not 506(b) - wrong control set? Confirm with counsel."
+        return "open", [f"Form D = {ex}"], "Rule 506(b) not clearly claimed on Form D; confirm the exemption relied upon."
+
+    if key == "exemption_is_506c":
+        ex = fd.get("exemptions") or []
+        if "06c" in ex:
+            return "satisfied", [f"Form D federalExemptionsExclusions = {ex}"], "Form D claims Rule 506(c) [06c]."
+        if "06b" in ex:
+            return "escalate_to_counsel", [f"Form D = {ex}"], "Form D claims 506(b), not 506(c) - wrong control set? Confirm with counsel."
+        return "open", [f"Form D = {ex}"], "Rule 506(c) not clearly claimed on Form D; confirm the exemption relied upon."
+
+    if key == "all_accredited_506c":
+        na = fd.get("has_non_accredited")
+        if na is False:
+            return "satisfied", ["Form D: hasNonAccreditedInvestors = false"], "Form D reports 0 non-accredited purchasers, consistent with 506(c)'s all-accredited requirement (counsel confirms reliance)."
+        if na is True:
+            return "escalate_to_counsel", ["Form D: hasNonAccreditedInvestors = true"], "Form D reports non-accredited purchasers - INCOMPATIBLE with 506(c) (all purchasers must be accredited). Counsel assesses."
+        return "open", [], "Non-accredited status not determinable from Form D; confirm all purchasers accredited (private)."
+
+    if key == "nonaccredited_ceiling":
+        na = fd.get("has_non_accredited")
+        if na is False:
+            return "satisfied", ["Form D: hasNonAccreditedInvestors = false"], "Form D reports 0 non-accredited purchasers; the <=35 ceiling is not implicated (counsel confirms reliance)."
+        if na is True:
+            return "open", ["Form D: hasNonAccreditedInvestors = true"], "Non-accredited purchasers present; confirm count <=35 AND each is sophisticated (private)."
+        return "open", [], "Non-accredited status not determinable from Form D; confirm (private)."
+
+    if key == "info_delivery_conditional":
+        if fd.get("has_non_accredited") is False:
+            return "n/a", ["Form D: 0 non-accredited"], "Not triggered: no non-accredited purchasers per Form D."
+        return "open", [], "If any non-accredited purchaser, confirm 230.502(b) information delivery (private)."
+
+    if key == "no_general_solicitation":
+        return "escalate_to_counsel", [], "The defining 506(b) risk. Not verifiable from EDGAR - needs marketing-conduct evidence; counsel assesses."
+
+    if key == "bad_actor_screen":
+        flagged = [r for r in ctx["badactor"]["results"] if r["state"] == "escalate_to_counsel"]
+        if flagged:
+            ev = [f"{r['watch_name']}: {r['evidence'][0]['title'][:70]}" for r in flagged]
+            return "escalate_to_counsel", ev, "Covered person(s) appear in a current SEC administrative proceeding - DISAMBIGUATE + assess 506(d) coverage; counsel opines."
+        return "open", [f"screened {len(ctx['watchlist'])} covered persons vs AP feed; no current match"], "No match in the AP-feed window. NOT a clearance - historical check (SALI/archives) still required."
+
+    if key == "integration_window":
+        fdate = fd.get("filing_date")
+        others = []
+        if fdate:
+            try:
+                d0 = datetime.date.fromisoformat(fdate)
+            except ValueError:
+                d0 = None
+            for f in fd.get("all_filings", []):
+                if f["accession"] == fd.get("accession") or f["form"] not in efd.OFFERING_FORMS:
+                    continue
+                try:
+                    if d0 and abs((datetime.date.fromisoformat(f["date"]) - d0).days) <= INTEGRATION_WINDOW_DAYS:
+                        others.append(f)
+                except ValueError:
+                    continue
+        if others:
+            ev = [f"{f['date']} {f['form']} ({f['accession']})" for f in others]
+            return "escalate_to_counsel", ev, "Other EDGAR offering filing(s) within ~6 months - assess integration / Rule 152 (counsel)."
+        return "open", ["no other EDGAR offering-type filings within ~6 months"], "Public-side integration window clean; private / other-raise facts still needed - counsel assesses."
+
+    if key == "form_d_filed":
+        fs = fd.get("date_of_first_sale")
+        return "open", [f"Form D on file: accession {fd.get('accession')} (filed {fd.get('filing_date')})", f"first-sale date: {fs}"], \
+            "Form D is filed; confirm it was within 15 days of first sale (reconcile first-sale date vs filing date)."
+
+    if key == "amount_reconciliation":
+        ev = [f"Form D offered: {fd.get('total_offering_amount')}", f"sold: {fd.get('total_sold')}", f"remaining: {fd.get('total_remaining')}"]
+        return "open", ev, "Reconcile these Form D amounts against the cap table / subscription records (private)."
+
+    # --- Regulation Crowdfunding (Form C driver) evaluators ---
+    if key == "cf_cap":
+        cap = 5_000_000
+        tgt, mx = fd.get("offering_amount"), fd.get("maximum_offering_amount")
+        ev = [f"Form C target (offeringAmount): {tgt}", f"Form C maximum (maximumOfferingAmount): {mx}"]
+
+        def _amt(x):
+            try:
+                return float(x) if x is not None else None
+            except (ValueError, TypeError):
+                return None
+        # Prefer the maximum (the cap is tested against the most the issuer can raise); fall back to
+        # the target so a missing/malformed maximum still escalates on the number we DO have.
+        amt = _amt(mx)
+        basis = "maximum"
+        if amt is None:
+            amt = _amt(tgt)
+            basis = "target (maximum not parseable)"
+        if amt is not None and amt > cap:
+            return "escalate_to_counsel", ev, f"This Form C's {basis} EXCEEDS the $5,000,000 Reg CF ceiling - assess (counsel)."
+        if amt is not None:
+            return "open", ev, (f"This offering's {basis} is within the $5,000,000 ceiling, but the Reg CF cap is a "
+                                "ROLLING 12-month AGGREGATE across all of the issuer's Reg CF raises - reconcile against any "
+                                "other Reg CF offerings in the trailing 12 months (private). Not a clearance; counsel confirms.")
+        return "open", ev, "Neither maximum nor target offering amount parseable from Form C; confirm vs the $5M rolling 12-month cap."
+
+    if key == "cf_form_c_filed":
+        # A Form C is on EDGAR (load_form_c errored out otherwise) - but the obligation is multi-part:
+        # filed BEFORE the offering commences + Form C-AR annually. Only the existence leg is a verified
+        # public fact; timing and the continuous C-AR leg are not. So this stays `open`, mirroring the
+        # Form D analog (form_d_filed) - never mark a partly-unverified exemption-fatal obligation satisfied.
+        return "open", [f"Form {fd.get('form_type', 'C')} on EDGAR: accession {fd.get('accession')} (filed {fd.get('filing_date')})"], \
+            ("A Form C is on file with the SEC (existence verified from EDGAR). NOT a clearance: confirm it "
+             "preceded the offering's commencement, and that Form C-AR annual reports are filed while the "
+             "reporting obligation runs (continuous).")
+
+    if key == "cf_intermediary":
+        # Live two-register verification (SEC EDGAR CFPORTAL + FINRA funding-portal list),
+        # pre-computed in build() and passed via ctx. Resolves to satisfied when BOTH public
+        # registers confirm on the SEC file number with reconciling names (a pure public-register
+        # fact), escalate on any inconsistency/withdrawal, open if a register was unreachable.
+        portal = ctx.get("portal")
+        if portal:
+            return portal["state"], portal["evidence"], portal["note"]
+        # Fallback: no verification available (no identifiers, or the subprocess failed) -> surface
+        # what the Form C gave us; never imply a clearance.
+        nm, icik = fd.get("intermediary_name"), fd.get("intermediary_cik")
+        crd, fno = fd.get("intermediary_crd"), fd.get("intermediary_file_number")
+        ev = [f"intermediary: {nm}", f"intermediary CIK: {icik}", f"file number: {fno}", f"CRD: {crd}"]
+        is_portal_fn = bool(fno and str(fno).startswith("007-"))
+        if nm and (fno or crd):
+            note = ("Form C names a single intermediary" + (" with a funding-portal file number (007- prefix)" if is_portal_fn else "") +
+                    " / CRD, but the SEC/FINRA registers could not be reached to verify current registration + "
+                    "membership - re-run; do not treat as a clearance. Counsel confirms.")
+            return "open", ev, note
+        return "open", ev, "Intermediary identity not fully determinable from Form C; confirm a registered portal/BD."
+
+    if key == "mtl_fund_custody":
+        # Money-transmission leg: read the portal's Form Funding Portal (EDGAR CFPORTAL) for the
+        # disclosed investor-funds custodian, confirm it is a qualified third party (registered BD)
+        # distinct from the portal. Pre-computed in build() via ctx. Escalate if the portal appears
+        # to handle funds itself; open (evidenced) when the 227.303(e) structure checks out; the
+        # executed escrow agreement + AML/BSA controls remain private, so never satisfied here.
+        fc = ctx.get("fund_custody")
+        if fc:
+            return fc["state"], fc["evidence"], fc["note"]
+        return "open", [], ("Needs the portal's Form Funding Portal (CFPORTAL) to read the disclosed fund-custody "
+                            "arrangement - could not fetch it. Confirm a qualified third party (BD/bank/escrow) holds "
+                            "investor funds, not the portal, plus AML/BSA controls (private).")
+
+    if key == "cf_state_notice":
+        # Public legal fact (not a conclusion about this deal): Reg CF securities are "covered
+        # securities" under 15 U.S.C. 77r(b)(4)(C), so state REGISTRATION / qualification is preempted.
+        # We surface that + the offering's states (from Form C) and route the residual, state-specific
+        # NOTICE-filing compliance (private, not on EDGAR) + preserved state antifraud to counsel.
+        states = fd.get("state_jurisdictions") or []
+        ev = ["Reg CF securities are 'covered securities' under 15 U.S.C. 77r(b)(4)(C) (Section 4(a)(6)) - "
+              "state registration / qualification is preempted (statutory; not a conclusion about this offering)"]
+        if states:
+            shown = ", ".join(states[:12]) + (f" (+{len(states) - 12} more)" if len(states) > 12 else "")
+            ev.append(f"Form C lists the offering in {len(states)} jurisdiction(s): {shown}")
+        else:
+            ev.append("Form C does not enumerate offering jurisdictions; confirm where the offering was made")
+        return "open", ev, ("Registration is preempted by Section 18, so the state surface reduces to: any residual "
+                            "NOTICE filing + fee a state may still require for Reg CF (limited and state-specific - not on "
+                            "EDGAR) and the states' preserved ANTIFRAUD authority. Confirm the required state notices were "
+                            "filed where the offering was conducted (private). Counsel confirms.")
+
+    if key == "cf_single_intermediary":
+        # Cross-check the issuer's own Form C record: does every Form C / C-A name ONE intermediary?
+        # Distinct intermediaries across SEQUENTIAL offerings are permitted; distinct intermediaries
+        # over OVERLAPPING offering windows are the 227.300(b) concern. Public-record consistency
+        # only - exclusivity also depends on off-platform conduct, which stays private.
+        scan = ctx.get("form_c_intermediaries")
+        if not scan or not scan.get("rows"):
+            return "open", [], ("Needs the issuer's Form C filings to cross-check the intermediary - not available. "
+                                "Confirm the offering was conducted exclusively through one registered intermediary (private).")
+        rows = scan["rows"]
+        distinct = {_intermediary_key(r) for r in rows if _intermediary_key(r) is not None}
+        ev = [f"{r['form']} {r['date']}: {r.get('intermediary_name')} (CIK {r.get('intermediary_cik')})" for r in rows]
+
+        # Incompleteness guards - an incomplete scan must NOT clear to a clean single-intermediary
+        # record (that would be a false clearance on an exemption-fatal control). Sources of gaps:
+        # truncation (older filings unscanned), a Form C that failed to parse (rows < C/C-A filings),
+        # or a filing whose intermediary couldn't be resolved at all.
+        total_cf = sum(1 for f in (fd.get("all_filings") or []) if f.get("form", "").upper() in ("C", "C/A"))
+        truncated = scan.get("truncated")
+        parse_gap = (not truncated) and len(rows) < total_cf
+        unresolved = any(_intermediary_key(r) is None for r in rows)
+        incomplete = bool(truncated or parse_gap or unresolved)
+        if truncated:
+            ev.append("note: only the most recent Form C filings were scanned (older ones not checked)")
+        if parse_gap:
+            ev.append(f"note: {total_cf - len(rows)} of {total_cf} Form C / C-A filing(s) could not be parsed (not cross-checked)")
+        if unresolved:
+            ev.append("note: a scanned Form C did not resolve an intermediary identity")
+
+        # Concurrent distinct intermediaries -> escalate regardless of completeness (a real flag).
+        if len(distinct) > 1 and _concurrent_distinct_intermediaries(rows):
+            return "escalate_to_counsel", ev, ("The issuer's Form C filings name DISTINCT intermediaries with OVERLAPPING "
+                                "offering windows - a single offering period may have used more than one intermediary, "
+                                "which 227.300(b) prohibits. Counsel assesses.")
+        if len(distinct) > 1:
+            return "open", ev, ("The issuer's Form C filings name distinct intermediaries in NON-overlapping periods - "
+                                "consistent with separate SEQUENTIAL Reg CF offerings (permitted). Confirm no single offering "
+                                "spanned more than one intermediary; counsel confirms.")
+        if len(distinct) == 0:
+            return "open", ev, ("Could not identify the intermediary from the issuer's scanned Form C filing(s) - this is "
+                                "NOT a confirmation of a single intermediary. Confirm the offering used one registered "
+                                "intermediary (manual). Counsel assesses.")
+        # Exactly one distinct intermediary seen. Only call it a clean record if the scan was COMPLETE.
+        if incomplete:
+            return "open", ev, ("The Form C filings that were scanned name a single intermediary, but the scan was "
+                                "INCOMPLETE (see notes) - this is NOT a full-record confirmation. Verify the unscanned / "
+                                "unparsed filings and confirm exclusivity + no off-platform solicitation (private). Counsel assesses.")
+        return "open", ev, ("The issuer's Form C filing(s) on EDGAR all name a single intermediary - the public "
+                            "record is consistent with conducting the offering through one intermediary (227.300(b)). "
+                            "Confirm no off-platform / multi-channel solicitation occurred (private). Counsel confirms.")
+
+    if key == "portal_conduct":
+        # FINRA prohibited-conduct / FP Rule 200 standing, from the portal's Form Funding Portal
+        # (reuses the CFPORTAL already fetched for the fund-custody leg via ctx - no extra fetch).
+        # DISCIPLINE NOTE: a funding portal MAY lawfully receive transaction-based compensation and
+        # MAY take a financial interest in an issuer (17 CFR 227.205/300(c)) - so we SURFACE the
+        # disclosed compensation for counsel and explicitly do NOT flag it; flagging permitted comp
+        # would be the system drawing a (wrong) legal conclusion.
+        fc = ctx.get("fund_custody") or {}
+        cust = fc.get("custody") or {}
+        if not cust or not cust.get("has_cfportal"):
+            return "open", [], ("Needs the portal's Form Funding Portal (CFPORTAL) to assemble conduct evidence - "
+                                "not available. No-advice / no-solicitation / no-fund-handling / compensation are "
+                                "portal conduct; confirm privately. Counsel assesses.")
+        ev = []
+        withdrawn = cust.get("withdrawn")
+        # Funds-handling prong - cross-reference the money-transmission leg, with cause-appropriate
+        # evidence (a withdrawn portal escalates because it is DEREGISTERED, not because it holds funds).
+        if withdrawn:
+            ev.append("portal registration WITHDRAWN (see portal_finra_member / funds_qualified_third_party) - deregistered")
+        elif fc.get("state") == "escalate_to_counsel":
+            ev.append("funds-handling prong: see funds_qualified_third_party - FLAGGED (portal may handle investor funds)")
+        elif cust.get("custodian_name"):
+            ev.append(f"funds-handling prong: portal routes investor funds to a third party "
+                      f"('{cust.get('custodian_name')}') per its Form Funding Portal - not held by the portal")
+        comp = cust.get("compensation_desc")
+        if comp:
+            ev.append(f"disclosed compensation (CFPORTAL): {comp[:240]}")
+        affirm = cust.get("affirmative_disclosures") or []
+        if affirm:
+            ev.append(f"portal self-disclosed event(s) in CFPORTAL: {', '.join(affirm)}")
+            return "escalate_to_counsel", ev, ("The portal's Form Funding Portal AFFIRMS a criminal / regulatory / "
+                    "civil / financial disclosure item - assess the portal's standing under FINRA FP Rule 200; counsel.")
+        if fc.get("state") == "escalate_to_counsel":
+            reason = ("the portal's funding-portal registration is WITHDRAWN" if withdrawn
+                      else "the funds-handling prong is flagged (see funds_qualified_third_party)")
+            return "escalate_to_counsel", ev, (f"{reason}; advice/solicitation conduct remains private. Counsel assesses.")
+        ev.append("portal self-disclosures (CFPORTAL criminal/regulatory/civil/financial): all negative")
+        return "open", ev, ("Public CFPORTAL evidence assembled: the funds-handling prong is structurally addressed "
+                "(third-party custodian) and the portal discloses no criminal/regulatory/civil/financial events (FP "
+                "Rule 200). The disclosed compensation is surfaced for review - NOTE: a funding portal MAY receive "
+                "transaction-based compensation and MAY take a financial interest in an issuer (227.205/300(c)); whether "
+                "the arrangement is permissible is a legal judgment for counsel, NOT the system. The no-advice / "
+                "no-solicitation prongs are operational conduct - confirm privately. Counsel assesses.")
+
+    if key == "manual_runnable":
+        return "open", [], "Runnable against court-order / enforcement data; not yet wired."
+    if key == "manual_continuous":
+        return "open", [], "Monitor on a schedule (continuous)."
+    # default: manual_private / manual_hybrid
+    return "open", [], "Needs internal evidence; counsel confirms."
+
+
+def sovereign_coverage(framework, rows):
+    """Self-report coverage along the authority-model sovereign axis: which declared-in-scope
+    sovereigns actually have controls, and which are GAPS (in scope but 0 controls = the system
+    does not yet cover that sovereign -> it must say so, not look complete)."""
+    in_scope = framework.get("sovereigns_in_scope", [])
+    counts = {}
+    for r in rows:
+        counts[r.get("sovereign", "UNSPECIFIED")] = counts.get(r.get("sovereign", "UNSPECIFIED"), 0) + 1
+    return {
+        "in_scope": in_scope,
+        "counts": counts,
+        "gaps": [s for s in in_scope if counts.get(s, 0) == 0],
+        "undeclared": [s for s in counts if s != "UNSPECIFIED" and in_scope and s not in in_scope],
+        "missing_field": [r["id"] for r in rows if not r.get("sovereign")],
+    }
+
+
+# A framework declares which EDGAR offering form drives it. Form D -> Reg D (506(b)/(c));
+# Form C -> Reg CF funding-portal raises. Both loaders return the same envelope shape.
+DRIVERS = {"form_d": efd.load_form_d, "form_c": efd.load_form_c}
+
+
+def build(cik, framework_path=CONTROLS, opinions_path=None):
+    framework = json.load(open(framework_path, encoding="utf-8"))
+    driver = framework.get("driver", "form_d")
+    loader = DRIVERS.get(driver)
+    if not loader:
+        sys.exit(f"unknown framework driver '{driver}' (known: {', '.join(DRIVERS)})")
+    fd = loader(cik)
+    watchlist = [fd["issuer"]] + [p["name"] for p in fd.get("related_persons", [])]
+    ctx = {"watchlist": watchlist, "badactor": run_badactor(watchlist)}
+    # Form C surfaces an intermediary -> verify it against the SEC + FINRA registers (once),
+    # and read the portal's Form Funding Portal for the disclosed fund-custody arrangement.
+    if fd.get("intermediary_cik") or fd.get("intermediary_file_number"):
+        ctx["portal"] = run_portal_check(fd)
+        ctx["fund_custody"] = run_fund_custody(fd)
+    # Single-intermediary cross-check: which intermediary does each of the issuer's Form C filings name?
+    if driver == "form_c":
+        rows, truncated = efd.list_form_c_intermediaries(cik, fd.get("all_filings", []))
+        ctx["form_c_intermediaries"] = {"rows": rows, "truncated": truncated}
+    registry = areg.load_registry()
+    assumptions = asm_reg.load_assumptions()
+    rows = []
+    for c in framework["controls"]:
+        state, evidence, note = evaluate(c, fd, ctx)
+        nodes = areg.resolve(c.get("authority_refs"), registry)
+        caveats = [a["statement"] for a in asm_reg.for_control(assumptions, c["id"]) if a["kind"] == "accepted"]
+        rows.append({**c, "state": state, "evidence": evidence, "note": note, "authority_nodes": nodes, "caveats": caveats})
+    # Named-counsel terminal node: a fresh opinion closes a control (satisfied_by_counsel); a
+    # stale one (law/fact drift) reverts it to escalate. Applied BEFORE counts/urgent.
+    if opinions_path:
+        counsel.apply_opinions(rows, counsel.load_opinions(opinions_path), registry,
+                               {"form_d_accession": fd.get("accession")})
+    counts = {}
+    for r in rows:
+        counts[r["state"]] = counts.get(r["state"], 0) + 1
+    urgent = [r for r in rows if r["severity"] == "exemption_fatal" and r["state"] in ("open", "escalate_to_counsel")]
+    coverage = sovereign_coverage(framework, rows)
+    return framework, fd, rows, counts, urgent, coverage
+
+
+BADGE = {"satisfied": "#1a7f37", "open": "#6e7781", "escalate_to_counsel": "#bc4c00", "n/a": "#0969da",
+         "satisfied_by_counsel": "#8250df"}
+
+
+def render_html(framework, fd, rows, counts, urgent, coverage, cik):
+    e = html.escape
+    cov_items = []
+    for s in coverage["in_scope"]:
+        n = coverage["counts"].get(s, 0)
+        if n == 0:
+            cov_items.append(f'<li><b style="color:#bc4c00">{e(s)}: COVERAGE GAP</b> &mdash; in scope, 0 controls &rarr; escalate (sovereign not yet modeled)</li>')
+        else:
+            cov_items.append(f'<li><b>{e(s)}</b>: {n} control(s)</li>')
+    for s in coverage["undeclared"]:
+        cov_items.append(f'<li>{e(s)}: {coverage["counts"][s]} control(s) (not declared in scope &mdash; review)</li>')
+    cov_html = (f'<div style="background:#ddf4ff;border:1px solid #54aeff66;border-radius:6px;padding:10px 14px;margin-top:12px">'
+                f'<b>Sovereign coverage</b> (authority-model axis)<ul style="margin:6px 0 0">{"".join(cov_items)}</ul></div>')
+    summary = " &middot; ".join(f"{e(k)}: {v}" for k, v in sorted(counts.items())) + " &middot; conclusions drawn: 0"
+    trs = []
+    for r in rows:
+        ev = "".join(f"<li>{e(str(x))}</li>" for x in r["evidence"])
+        pins = "".join(f'<div style="font-size:11px;color:#777">{e(n["id"])}@{e(n["pinned_version"])}</div>' for n in r.get("authority_nodes", []))
+        opin = ""
+        if r.get("opinion"):
+            o = r["opinion"]
+            tag = f'by counsel: {o.get("attorney")} ({o.get("date")}, {o.get("id")})'
+            if not o.get("fresh"):
+                tag += f' — STALE: {o.get("stale_reason")} — re-opine'
+            opin = f'<div style="font-size:12px;color:#8250df;margin-top:4px">{e(tag)}</div>'
+        cavs = "".join(f'<div style="font-size:11px;color:#9a6700;margin-top:2px">! known limitation: {e(c)}</div>' for c in r.get("caveats", []))
+        trs.append(
+            f'<tr style="border-bottom:1px solid #eaeef2">'
+            f'<td><span style="background:{BADGE[r["state"]]};color:#fff;padding:2px 8px;border-radius:10px;font-size:12px;white-space:nowrap">{e(r["state"])}</span></td>'
+            f'<td><b>{e(r["id"])}</b><br><span style="color:#444">{e(r["obligation"])}</span></td>'
+            f'<td><code>{e(r["authority"])}</code>{pins}</td>'
+            f'<td style="font-size:12px;color:#555"><b>{e(r.get("sovereign","?"))}</b><br>{e(r["severity"])}<br>{e(r["locus"])}<br>owner: {e(r["owner"])}</td>'
+            f'<td style="font-size:13px"><ul style="margin:0;padding-left:16px">{ev}</ul><div style="color:#555;margin-top:4px">{e(r["note"])}</div>{opin}{cavs}</td>'
+            f'</tr>')
+    urgent_li = "".join(f"<li><b>{e(r['id'])}</b> &mdash; {e(r['obligation'])} <code>{e(r['authority'])}</code></li>" for r in urgent)
+    return f"""<!doctype html><html><head><meta charset="utf-8">
+<title>Control Panel - {e(fd['issuer'])}</title></head>
+<body style="font-family:-apple-system,Segoe UI,Roboto,sans-serif;max-width:980px;margin:24px auto;color:#1f2328;padding:0 16px">
+<div style="background:#fff8c5;border:1px solid #d4a72c;border-radius:6px;padding:10px 14px;font-size:13px">
+<b>This is not legal advice and draws no legal conclusions.</b> It assembles evidence and flags
+open items and judgment calls for counsel. Outputs are <i>satisfied / open / escalate to counsel / n/a</i>
+&mdash; never &ldquo;compliant&rdquo; or &ldquo;exemption available.&rdquo; Counsel opines.</div>
+<h1 style="margin:18px 0 2px">Counsel-Ready Control Panel</h1>
+<div style="color:#555">{e(framework['offering_type'])} &middot; <b>{e(fd['issuer'])}</b> &middot; CIK {int(cik)} &middot; Form {e(fd.get('form_type') or 'D')} {e(fd.get('accession') or '')} (filed {e(fd.get('filing_date') or '?')})</div>
+<p style="font-size:14px">{summary}</p>
+<div style="background:#ffebe9;border:1px solid #ff818266;border-radius:6px;padding:10px 14px">
+<b>Urgent &mdash; exemption-fatal, not yet satisfied ({len(urgent)})</b>
+<ul style="margin:6px 0 0">{urgent_li}</ul></div>
+{cov_html}
+<table style="border-collapse:collapse;width:100%;margin-top:16px;font-size:14px" border="0">
+<thead><tr style="text-align:left;border-bottom:2px solid #d0d7de">
+<th>State</th><th>Control</th><th>Authority</th><th>Axes</th><th>Evidence / Note</th></tr></thead>
+<tbody>{"".join(trs)}</tbody></table>
+<p style="color:#6e7781;font-size:12px;margin-top:18px">Generated by control-panel.py from public EDGAR + SEC data.
+The bad-actor leg is a rolling-window monitor (historical SALI check pending). Private controls
+require issuer evidence. This panel never concludes; counsel opines.</p>
+</body></html>"""
+
+
+def main():
+    ap = argparse.ArgumentParser(description="Render a counsel-ready control panel for a CIK; --framework selects the offering type (default Rule 506(b); also 506(c) / Reg CF funding-portal). Never-opine.")
+    ap.add_argument("--cik", required=True)
+    ap.add_argument("--framework", default=CONTROLS, help="control framework JSON (default: reg-d-506b.json)")
+    ap.add_argument("--opinions", metavar="PATH", help="opinions-of-record JSON (named-counsel node)")
+    ap.add_argument("--json", action="store_true")
+    ap.add_argument("--html", metavar="PATH", help="write a self-contained HTML report to PATH")
+    args = ap.parse_args()
+
+    framework, fd, rows, counts, urgent, coverage = build(args.cik, args.framework, args.opinions)
+
+    if args.html:
+        with open(args.html, "w", encoding="utf-8") as fh:
+            fh.write(render_html(framework, fd, rows, counts, urgent, coverage, args.cik))
+        print(f"wrote {args.html}")
+        return
+
+    if args.json:
+        print(json.dumps({"issuer": fd["issuer"], "cik": str(int(args.cik)), "form_d": fd.get("accession"),
+                          "offering_type": framework["offering_type"], "counts": counts,
+                          "sovereign_coverage": coverage,
+                          "exemption_fatal_open": [r["id"] for r in urgent], "controls": rows}, indent=2))
+        return
+
+    MARK = {"satisfied": "OK ", "open": "open", "escalate_to_counsel": "FLAG->counsel", "n/a": "n/a ",
+            "satisfied_by_counsel": "BY COUNSEL"}
+    print(f"Counsel-ready control panel | {framework['offering_type']} | {fd['issuer']} | CIK {int(args.cik)} | Form {fd.get('form_type') or 'D'} {fd.get('accession')}")
+    print(" · ".join(f"{k}: {v}" for k, v in sorted(counts.items())) + " · conclusions drawn by the system: 0\n")
+    for r in rows:
+        print(f"[{MARK[r['state']]:>13}] {r['id']}  [{r.get('sovereign','?')}] ({r['severity']}, {r['locus']}, owner={r['owner']})")
+        print(f"                {r['obligation']}")
+        print(f"                authority: {r['authority']}")
+        if r.get("authority_nodes"):
+            print(f"                pinned: " + ", ".join(f"{n['id']}@{n['pinned_version']}" for n in r["authority_nodes"]))
+        for ev in r["evidence"]:
+            print(f"                  - {ev}")
+        if r.get("opinion"):
+            o = r["opinion"]
+            tag = f"by counsel: {o.get('attorney')} ({o.get('date')}, {o.get('id')})"
+            if not o.get("fresh"):
+                tag += f"  [STALE: {o.get('stale_reason')} - re-opine]"
+            print(f"                {tag}")
+        for cav in r.get("caveats", []):
+            print(f"                ! known system limitation: {cav}")
+        print(f"                -> {r['note']}\n")
+    print("Sovereign coverage (authority-model axis):")
+    for s in coverage["in_scope"]:
+        n = coverage["counts"].get(s, 0)
+        gap = "   <- COVERAGE GAP: in scope, 0 controls -> escalate (sovereign not yet modeled)" if n == 0 else ""
+        print(f"  {s}: {n} control(s){gap}")
+    for s in coverage["undeclared"]:
+        print(f"  {s}: {coverage['counts'][s]} control(s) (not declared in scope - review)")
+    if coverage["missing_field"]:
+        print(f"  ! controls missing a sovereign: {coverage['missing_field']}")
+    print(f"\nURGENT (exemption-fatal, not yet satisfied): {len(urgent)} -> " + ", ".join(r["id"] for r in urgent))
+    print("\nThis panel assembles and flags. It never concludes. Counsel opines.")
+
+
+if __name__ == "__main__":
+    main()

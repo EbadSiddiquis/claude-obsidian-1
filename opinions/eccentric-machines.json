@@ -1,0 +1,27 @@
+{
+  "deal": "Eccentric Machines, Inc. (CIK 2141182)",
+  "note": "SYNTHETIC sample opinion-of-record, created only to exercise the counsel-node decay mechanism. The attorney is a placeholder; this is NOT a real legal opinion and no real counsel has opined on this offering. pinned_authority_versions snapshot the registry at opinion time; if any drifts, the opinion goes stale.",
+  "opinions": [
+    {
+      "id": "op-2026-0001",
+      "attorney": "SAMPLE Counsel of Record (placeholder), Example LLP",
+      "date": "2026-06-29",
+      "scope": "Availability of the Rule 506(b) exemption for the offering, as to the controls listed.",
+      "covers_controls": ["no_general_solicitation", "accredited_reasonable_belief", "integration", "corp_valid_authorization"],
+      "assumptions": [
+        "Issuer-provided cap table and subscription records are accurate and complete.",
+        "No general solicitation or advertising was used to offer or sell the securities.",
+        "Each purchaser's accredited status is as represented to the issuer."
+      ],
+      "pinned_authority_versions": {
+        "cfr-230.502": "2021-03-15",
+        "cfr-230.501": "2025-02-18",
+        "cfr-230.152": "2021-06-09",
+        "state-corp-dgcl": "manual:2026-06-29"
+      },
+      "pinned_facts": {
+        "form_d_accession": "0002141182-26-000001"
+      }
+    }
+  ]
+}

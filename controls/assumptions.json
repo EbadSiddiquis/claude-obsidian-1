@@ -1,0 +1,158 @@
+{
+  "note": "System-assumption meta-node (authority-model Tier F): the truths the EVALUATORS rely on. A wrong assumption silently flips a control's state, so we model assumptions as first-class, monitored nodes. kind 'verifiable' has an executable check (holds/VIOLATED); kind 'accepted' is a known limitation/heuristic surfaced so it is never forgotten (not auto-checkable). affects_controls links an assumption to the controls it could corrupt ('*' = all Form-D-driven controls ONLY; Form-C-driven controls are listed explicitly, never matched by '*').",
+  "assumptions": [
+    {
+      "id": "asm-formd-raw-xml",
+      "kind": "verifiable",
+      "statement": "EDGAR Form D structured XML is at primary_doc.xml (strip the xsl-prefix from submissions' primaryDocument).",
+      "used_by": "edgar_formd.load_form_d",
+      "risk_if_wrong": "Form D parse fails or yields the rendered HTML -> every control's state is silently wrong.",
+      "check": "formd_raw_xml",
+      "affects_controls": ["*"]
+    },
+    {
+      "id": "asm-formd-fields",
+      "kind": "verifiable",
+      "statement": "Form D field localnames are stable: entityName, federalExemptionsExclusions/item, hasNonAccreditedInvestors, dateOfFirstSale/value, relatedPersonInfo.",
+      "used_by": "edgar_formd.parse_form_d",
+      "risk_if_wrong": "A field rename empties an evaluator input -> control silently flips to open/wrong.",
+      "check": "formd_fields",
+      "affects_controls": ["nonaccredited_ceiling", "info_delivery_if_nonaccredited", "form_d_filed", "amount_reconciliation", "bad_actor_506d"]
+    },
+    {
+      "id": "asm-formc-raw-xml",
+      "kind": "verifiable",
+      "statement": "EDGAR Form C structured XML is at primary_doc.xml (strip the xslC_X01/ styling-dir prefix from submissions' primaryDocument); nameOfIssuer + commissionCik resolve.",
+      "used_by": "edgar_formd.load_form_c / list_form_c_intermediaries",
+      "risk_if_wrong": "Form C parse fails or yields the rendered HTML -> the driver of the WHOLE funding-portal framework silently breaks (every issuer-side control wrong).",
+      "check": "formc_raw_xml",
+      "affects_controls": ["cf_aggregate_cap", "cf_form_c_filed", "cf_single_intermediary", "cf_state_notice", "cf_bad_actor_503"]
+    },
+    {
+      "id": "asm-formc-fields",
+      "kind": "verifiable",
+      "statement": "Form C field localnames are stable: nameOfIssuer, companyName, commissionCik/commissionFileNumber/crdNumber, offeringAmount/maximumOfferingAmount, issueJurisdictionSecuritiesOffering, signaturePerson, deadlineDate.",
+      "used_by": "edgar_formd.parse_form_c",
+      "risk_if_wrong": "A field rename empties an evaluator input -> cf_cap / cf_single_intermediary / cf_state_notice / the issuer-side bad-actor screen silently flip with no drift signal.",
+      "check": "formc_fields",
+      "affects_controls": ["cf_aggregate_cap", "cf_single_intermediary", "cf_state_notice", "cf_bad_actor_503"]
+    },
+    {
+      "id": "asm-formc-filing-timing",
+      "kind": "accepted",
+      "statement": "cf_form_c_filed verifies only that a Form C EXISTS on EDGAR; the 'filed before the offering commenced' timing and the continuous Form C-AR legs are not publicly verifiable.",
+      "used_by": "control-panel.evaluate:cf_form_c_filed",
+      "risk_if_wrong": "Existence could be read as a clearance. Mitigated: the control stays open and the note says 'NOT a clearance' - this registers that limitation as a first-class monitored caveat (parity with asm-badactor-rolling-window).",
+      "check": null,
+      "affects_controls": ["cf_form_c_filed"]
+    },
+    {
+      "id": "asm-exemption-code-06b",
+      "kind": "verifiable",
+      "statement": "Form D federalExemptionsExclusions encodes Rule 506(b) as the literal code '06b'.",
+      "used_by": "control-panel.evaluate:exemption_is_506b",
+      "risk_if_wrong": "exemption_basis control mis-detects the offering type.",
+      "check": "exemption_code_06b",
+      "affects_controls": ["exemption_basis_506b"]
+    },
+    {
+      "id": "asm-ecfr-versioner",
+      "kind": "verifiable",
+      "statement": "eCFR versioner /versions/title-17.json?part=NNN returns content_versions[] with identifier + amendment_date.",
+      "used_by": "authority-drift.py",
+      "risk_if_wrong": "Codified-law drift detection silently stops working (every node reads unverifiable).",
+      "check": "ecfr_shape",
+      "affects_controls": []
+    },
+    {
+      "id": "asm-fedreg-api",
+      "kind": "verifiable",
+      "statement": "Federal Register API returns results[] with a cfr_references field ([{title, part}]).",
+      "used_by": "fedreg-watch.py",
+      "risk_if_wrong": "Release/order drift mapping silently breaks (binding-but-uncodified gap reopens).",
+      "check": "fedreg_shape",
+      "affects_controls": []
+    },
+    {
+      "id": "asm-ap-rss",
+      "kind": "verifiable",
+      "statement": "SEC Administrative Proceedings RSS (admin.xml) returns <item><title> entries.",
+      "used_by": "badactor-watch.py",
+      "risk_if_wrong": "Bad-actor drift monitor silently returns no matches (looks clean when it is blind).",
+      "check": "ap_rss_shape",
+      "affects_controls": ["bad_actor_506d", "cf_bad_actor_503"]
+    },
+    {
+      "id": "asm-cfportal-forms",
+      "kind": "verifiable",
+      "statement": "EDGAR funding-portal registration uses the CFPORTAL form family: CFPORTAL (initial), CFPORTAL/A (amendment), CFPORTAL-W (withdrawal). Registered = a CFPORTAL exists and the latest is not a -W.",
+      "used_by": "finra-portal-check.check_sec_registration",
+      "risk_if_wrong": "The SEC-registration leg of portal_finra_member mis-reads (false REGISTERED/WITHDRAWN) -> the control's state is silently wrong.",
+      "check": "cfportal_forms",
+      "affects_controls": ["portal_finra_member"]
+    },
+    {
+      "id": "asm-finra-fp-html",
+      "kind": "verifiable",
+      "statement": "FINRA's 'Funding Portals We Regulate' page lists each portal in a div.multicolumn-container with an EDGAR link carrying filenum=<n>&type=CFPORTAL; presence on the list == FINRA member.",
+      "used_by": "finra-portal-check.parse_finra_entry",
+      "risk_if_wrong": "The FINRA-membership leg silently finds nothing -> portal_finra_member wrongly escalates (fails safe) or, if the structure shifts subtly, mis-attributes an entry.",
+      "check": "finra_fp_shape",
+      "affects_controls": ["portal_finra_member"]
+    },
+    {
+      "id": "asm-cfportal-escrow-fields",
+      "kind": "verifiable",
+      "statement": "Form Funding Portal (CFPORTAL) discloses fund custody in structured fields: escrowArrangements wrapping investorFundsContacts/investorFundsContactName (+ address). A registered broker-dealer files X-17A-5 on EDGAR (qualified third party per 227.303(e)(1)).",
+      "used_by": "fund-custody-check.parse_cfportal / verify_custodian_is_bd",
+      "risk_if_wrong": "The money-transmission leg (funds_qualified_third_party) mis-reads the custodian or the BD status -> control state silently wrong.",
+      "check": "cfportal_escrow_fields",
+      "affects_controls": ["funds_qualified_third_party"]
+    },
+    {
+      "id": "asm-cfportal-disclosure-fields",
+      "kind": "verifiable",
+      "statement": "Form Funding Portal discloses regulatory history in four negative-event subtrees (criminalDisclosure / regulatoryActionDisclosure / civilJudicialActionDisclosure / financialDisclosure); affirmative leaves there are self-disclosed events (FP Rule 200). The scan is prefix-agnostic so a renamed field is not silently missed.",
+      "used_by": "fund-custody-check._scan_disclosures",
+      "risk_if_wrong": "If the subtrees are renamed/dropped, the scan finds nothing -> a false 'all-negative' clearance on portal_prohibited_conduct.",
+      "check": "cfportal_disclosure_fields",
+      "affects_controls": ["portal_prohibited_conduct"]
+    },
+    {
+      "id": "asm-fileno-normalize",
+      "kind": "accepted",
+      "statement": "SEC funding-portal file numbers normalize to FINRA's display form by stripping leading-zero padding per hyphen part (007-00042 -> 7-42); this is the join key between the two registers.",
+      "used_by": "finra-portal-check.normalize_file_number",
+      "risk_if_wrong": "A normalization miss makes the FINRA lookup fail -> portal_finra_member escalates ('not on list') rather than falsely satisfying. Fails SAFE (escalate, never a false clearance).",
+      "check": null,
+      "affects_controls": ["portal_finra_member"]
+    },
+    {
+      "id": "asm-badactor-substring",
+      "kind": "accepted",
+      "statement": "Bad-actor matching is case-insensitive substring matching; false positives are EXPECTED and resolved by human disambiguation.",
+      "used_by": "badactor-watch.check",
+      "risk_if_wrong": "Over-flags (handled: every hit is escalate-to-counsel, never a conclusion) or misses name variants (under-flags).",
+      "check": null,
+      "affects_controls": ["bad_actor_506d", "cf_bad_actor_503"]
+    },
+    {
+      "id": "asm-badactor-rolling-window",
+      "kind": "accepted",
+      "statement": "The AP RSS is a rolling window, not the full history; a non-match is NOT a clearance (historical SALI check pending).",
+      "used_by": "badactor-watch / control-panel",
+      "risk_if_wrong": "A non-match could be read as a clearance. Mitigated: output says 'NOT a clearance'.",
+      "check": null,
+      "affects_controls": ["bad_actor_506d", "cf_bad_actor_503"]
+    },
+    {
+      "id": "asm-integration-180d",
+      "kind": "accepted",
+      "statement": "The integration control uses a +/-180-day EDGAR window as a PUBLIC-SIDE proxy; it is not the legal facts-and-circumstances integration test.",
+      "used_by": "control-panel.evaluate:integration_window",
+      "risk_if_wrong": "Window misses an integration concern outside 180 days. Mitigated: control never 'satisfied'; counsel owns integration.",
+      "check": null,
+      "affects_controls": ["integration"]
+    }
+  ]
+}
