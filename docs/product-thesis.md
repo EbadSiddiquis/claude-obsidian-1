@@ -222,6 +222,22 @@ De-risked before building. Findings:
 
 ## Revision Log
 
+- **v0.21 (2026-07-01):** Scaffolded the **Compliance Oracle** (`compliance-oracle/`) — the thesis
+  pointed at a new user: the *portal builder* (architect/validate/build a Reg CF funding portal on
+  sweat equity, zero spend on legal research of public regulatory knowledge). Hybrid graph +
+  relational store in one SQLite file: authority `nodes`/`edges` (the graph; cross-sovereign
+  `cross_references` are the money edges) + `controls`/`wsp_procedures`/`system_controls`/
+  `attestations` (the relational chain from obligation to artifact). Seeded with the **custody
+  triad** — 17 CFR 227.300/303 (SEC portal-may-not-hold-funds) ↔ 12 CFR 330.5/330.7 (FDIC
+  pass-through) ↔ 31 CFR 1023.210 (FinCEN AML) — ingested live from eCFR (pinned amendment dates,
+  never hardcoded from memory), traversable in one query (`query.py`), drift-monitored (`drift.py`).
+  The never-opine invariant carries over renamed: generated WSPs/specs are **candidates pending
+  adoption by a named supervisory principal**, attestations **decay on law-drift** (verified: a
+  simulated 227.303 move flipped the adopted WSP to `stale_reattest`), and the generation prompt
+  (`prompts/wsp-generation.md`) makes a legal conclusion structurally inexpressible (citation-per-
+  sentence, permitted-verbs list, mandatory candidate footer). The Oracle replaces the research and
+  drafting cost, not the accountable human of record — the same lawyer-still-opines boundary,
+  transposed to principal-still-adopts.
 - **v0.20 (2026-06-30):** **Consolidation freeze** of the Reg CF funding-portal control set. After
   building all nine controls across four sovereigns incrementally (each diff adversarially verified),
   ran a *holistic* audit of the whole set as one artifact - the cross-cutting view that diff-by-diff
