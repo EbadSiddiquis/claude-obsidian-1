@@ -147,6 +147,15 @@ ID (zero-padded in API paths). Full method + identifiers: [[EDGAR Data Access]],
 [[EDGAR APIs]], [[EDGAR Bulk Data]] in the wiki. (Established 2026-06-29 after WebFetch
 403s blocked SEC primary sources during the SEC/EDGAR autoresearch.)
 
+## Self-Sustaining `context.md` (project-agnostic memory)
+
+For any project (not just a vault), `bash bin/setup-context.sh` wires a
+**self-sustaining `context.md`**: a small file that is imported by `CLAUDE.md`
+(so it loads every session and survives compaction) and that Claude curates
+itself — it decides what durable facts, decisions, and current focus belong
+there. The generic cousin of `wiki/hot.md`. Full method + guardrails:
+[docs/self-sustaining-context-guide.md](docs/self-sustaining-context-guide.md).
+
 ## MCP (Optional)
 
 If you configured the MCP server, Claude can read and write vault notes directly.

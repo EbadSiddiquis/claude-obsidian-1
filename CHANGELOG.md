@@ -8,6 +8,7 @@ SEC/EDGAR knowledge build + a reusable primary-source fetch capability + the pro
 
 ### Added
 
+- **`bin/setup-context.sh` + `docs/self-sustaining-context-guide.md`** — give any project (not just a vault) a self-sustaining `context.md`: a small file imported by `CLAUDE.md` (loads every session, survives compaction) that Claude curates itself. Idempotent setup (never clobbers a curated file, never double-adds the import/hook), `--check` diagnostics, optional `Stop`-hook nudge guarded by `git status --porcelain` (silent on clean turns and non-git dirs). The project-agnostic cousin of `wiki/hot.md`.
 - **`scripts/sec-fetch.sh`** — fetches sec.gov / data.sec.gov with a compliant `User-Agent` (SEC fair-access policy) and follows redirects. Resolves the `WebFetch` HTTP 403 against SEC primary sources (root cause: missing User-Agent, not a hard block). Contact email via `SEC_CONTACT_EMAIL` env var (not hardcoded); sec.gov-only URL guard; `--text` HTML-to-text mode.
 - **General Operating Principles** in `CLAUDE.md` (diagnose-before-detour, a blocked primary source is a bug, disclose fallbacks, capture the fix, escalate) — generalized from the sec.gov incident; also mirrored to global memory.
 - **Product Context + `docs/product-thesis.md`** (living thesis: counsel-ready/drift-monitored layer for securities offerings; control model + five gap axes + three-layer drift engine with verified eCFR/Federal-Register endpoints) plus a Self-Refinement Protocol and a standing directive so future sessions refine the thesis proactively.
